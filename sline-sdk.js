@@ -105,10 +105,10 @@ window.console.log = this.console.log || function () {};
   /**
    * Get checkout URL from cart
    */
-  Sline.RequestCheckoutURL = async () => {
+  Sline.RequestCheckoutURL = async (id) => {
     res = await _GenerateCheckoutURL();
     Sline.checkoutURL = Sline.baseCheckoutURL + res.id;
-    var findlink = document.getElementById("rent");
+    var findlink = document.getElementById(id);
     findlink.href = Sline.checkoutURL;
   };
 })(this);
