@@ -126,6 +126,7 @@ window.console.log = this.console.log || function () {};
    * @param {string} prefix of href text content that will inserted (optionnal)
    */
   Sline.RequestCheckoutURL = async function (id, prefix) {
+    if (Sline.cart.length < 1) return ;
     var resUrl = await Sline._GenerateCheckoutURL();
     Sline.checkoutURL = Sline.baseCheckoutURL + resUrl.id;
     var resPrices = await Sline._RequestPrices();
