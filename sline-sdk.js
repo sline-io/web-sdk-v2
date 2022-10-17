@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "js1.0.2";
+  root.Sline.VERSION = "1.0.3";
 })(this);
 
 /**
