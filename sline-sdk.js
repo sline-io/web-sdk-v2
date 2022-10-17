@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "1.0.4";
+  root.Sline.VERSION = "1.0.5";
 })(this);
 
 /**
@@ -126,19 +126,20 @@ window.console.log = this.console.log || function () {};
    * @param {string} prefix of href text content that will inserted (optionnal)
    */
   Sline.RequestCheckoutURL = async function (id, prefix) {
-    if (Sline.cart.length < 1) return;
-    var resUrl = await Sline._GenerateCheckoutURL();
-    Sline.checkoutURL = Sline.baseCheckoutURL + resUrl.id;
-    var resPrices = await Sline._RequestPrices();
-    var prices = [];
-    for (var duration in resPrices) {
-      prices.push(resPrices[duration].otherInstalmentPrice.amount/100);
-    }
-    var minPrice = Math.min(...prices);
-    var findlink = document.getElementById(id);
-    findlink.href = Sline.checkoutURL;
-    if (prefix !== undefined) {
-      findlink.textContent = prefix + minPrice + "€ /mois";
+    if (Sline.cart.length > 0) {
+      var resUrl = await Sline._GenerateCheckoutURL();
+      Sline.checkoutURL = Sline.baseCheckoutURL + resUrl.id;
+      var resPrices = await Sline._RequestPrices();
+      var prices = [];
+      for (var duration in resPrices) {
+        prices.push(resPrices[duration].otherInstalmentPrice.amount/100);
+      }
+      var minPrice = Math.min(...prices);
+      var findlink = document.getElementById(id);
+      findlink.href = Sline.checkoutURL;
+      if (prefix !== undefined) {
+        findlink.textContent = prefix + minPrice + "€ /mois";
+      }
     }
   };
 
