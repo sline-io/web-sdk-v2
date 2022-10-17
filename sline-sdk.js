@@ -9,7 +9,7 @@ window.console = window.console || {};
 window.console.log = this.console.log || function () {};
 
 /**
- * expose our sdk
+ * Expose our sdk
  */
 (function (root) {
   root.Sline = root.Sline || {};
@@ -44,18 +44,18 @@ window.console.log = this.console.log || function () {};
    * This method is for Sline's own private use.
    * @param {String} retailerSlug retailer identifier
    */
-     Sline._initialize = function (retailerSlug, prod) {
-      Sline.retailerSlug = retailerSlug;
-      if (prod) {
-        Sline.apiURL = "https://api.sline.io/checkout/cart";
-        Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
-      } else {
-        Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
-        Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
-      }
-      Sline.cart = [];
-      Sline.checkoutURL = "";
-    };
+  Sline._initialize = function (retailerSlug, prod) {
+    Sline.retailerSlug = retailerSlug;
+    if (prod) {
+      Sline.apiURL = "https://api.sline.io/checkout/cart";
+      Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
+    } else {
+      Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
+      Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
+    }
+    Sline.cart = [];
+    Sline.checkoutURL = "";
+  };
 
   /**
    * Add Product to Cart
@@ -94,10 +94,10 @@ window.console.log = this.console.log || function () {};
 
 
 
-  Sline._GenerateCheckoutURL = async function() {
+  Sline._GenerateCheckoutURL = async function(cart) {
     var url = Sline.apiURL + "/import";
     var payload = {};
-    payload["cart"] = Sline.cart;
+    payload["cart"] = cart;
     payload["retailerSlug"] = Sline.retailerSlug;
 
     var myHeaders = new Headers();
@@ -127,9 +127,10 @@ window.console.log = this.console.log || function () {};
    */
   Sline.RequestCheckoutURL = async function (id, prefix) {
     if (Sline.cart.length > 0) {
-      var resUrl = await Sline._GenerateCheckoutURL();
+      var cart = Sline.cart;
+      var resUrl = await Sline._GenerateCheckoutURL(cart);
       Sline.checkoutURL = Sline.baseCheckoutURL + resUrl.id;
-      var resPrices = await Sline._RequestPrices();
+      var resPrices = await Sline._RequestPrices(cart);
       var prices = [];
       for (var duration in resPrices) {
         prices.push(resPrices[duration].otherInstalmentPrice.amount/100);
@@ -143,10 +144,10 @@ window.console.log = this.console.log || function () {};
     }
   };
 
-  Sline._RequestPrices = async function () {
+  Sline._RequestPrices = async function (cart) {
     var url = Sline.apiURL + "/pricing";
     var payload = {};
-    payload["cart"] = Sline.cart;
+    payload["cart"] = cart;
     payload["retailerSlug"] = Sline.retailerSlug;
 
     var myHeaders = new Headers();
