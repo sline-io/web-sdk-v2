@@ -55,7 +55,14 @@ window.console.log = this.console.log || function () {};
     }
     Sline.cart = [];
     Sline.checkoutURL = "";
+    Sline.prices = [];
+    Sline.durations = [];
+    Sline.checkoutButton = {id: null, text: ''};
   };
+
+  Sline.SetCheckoutButton = function(id, text) {
+    Sline.checkoutButton = {id, text};
+  }
 
   /**
    * Add Product to Cart
@@ -69,6 +76,7 @@ window.console.log = this.console.log || function () {};
     } else {
       Sline.cart.push({ sku: sku, quantity: qty });
     }
+    Sline._UpdateCheckoutButton();
   };
 
   /**
@@ -83,6 +91,7 @@ window.console.log = this.console.log || function () {};
     } else {
       Sline.cart.push({ sku: sku, quantity: qty });
     }
+    Sline._UpdateCheckoutButton();
   }
 
   /**
@@ -91,8 +100,6 @@ window.console.log = this.console.log || function () {};
   Sline.ResetCart = function () {
     Sline.cart = [];
   };
-
-
 
   Sline._GenerateCheckoutURL = async function(cart) {
     var url = Sline.apiURL + "/import";
@@ -130,17 +137,6 @@ window.console.log = this.console.log || function () {};
       var cart = Sline.cart;
       var resUrl = await Sline._GenerateCheckoutURL(cart);
       Sline.checkoutURL = Sline.baseCheckoutURL + resUrl.id;
-      var resPrices = await Sline._RequestPrices(cart);
-      var prices = [];
-      for (var duration in resPrices) {
-        prices.push(resPrices[duration].otherInstalmentPrice.amount/100);
-      }
-      var minPrice = Math.min(...prices);
-      var findlink = document.getElementById(id);
-      findlink.href = Sline.checkoutURL;
-      if (prefix !== undefined) {
-        findlink.textContent = prefix + minPrice + "€ /mois";
-      }
     }
   };
 
@@ -168,5 +164,69 @@ window.console.log = this.console.log || function () {};
       return console.warn(error);
     }
   };
+
+  Sline.GetDurationsAndPrices = async function (sku) {
+    var url = Sline.apiURL + "/pricing";
+    var payload = {};
+    payload["cart"] = [{
+      sku,
+      quantity: 1
+    }];
+    payload["retailerSlug"] = Sline.retailerSlug;
+
+    var myHeaders = new Headers();
+    myHeaders.append("accept", "application/json");
+    myHeaders.append("content-type", "application/json");
+    var raw = JSON.stringify(payload);
+    var requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+    try {
+      const response = await fetch(url, requestOptions);
+      const responseData = await response.json()
+      .then(res => {
+        Sline.durations = res.map(duration => duration.numberOfInstalments).sort((a, b) => a - b);
+        Sline.prices[sku] = {};
+        res.forEach(duration => {
+          Sline.prices[sku][`${duration.numberOfInstalments}`] = {
+            firstInstalmentPrice: duration.firstInstalmentPrice,
+            otherInstalmentPrice: duration.otherInstalmentPrice
+          };
+        });
+        document.body.dispatchEvent(new Event('SlinePricesReady', {
+          bubbles: true
+        }));
+      });
+      return responseData;
+    } catch (error) {
+      return console.warn(error);
+    }
+  };
+
+  Sline._UpdateCheckoutButton = async function () {
+    const checkoutButton = document.getElementById(Sline.checkoutButton.id);
+    const sku = checkoutButton.getAttribute('data-name');
+
+    if (sku && Sline.durations.length && Sline.prices[sku]) {
+
+      const minDuration = Sline.durations[0];
+      console.log(minDuration, Sline.prices[sku]);
+      const minPrice = Sline.prices[sku][minDuration].otherInstalmentPrice;
+      let currencySymbol = '';
+      switch (minPrice.price.currency) {
+        case 'USD':
+          currencySymbol = '$';
+          break;
+          
+        default:
+          currencySymbol = '€';
+          break;
+      }
+      checkoutButton.textContent = `${Sline.checkoutButton.text}${minPrice.amount/100}${currencySymbol}/mois`
+    }
+  }
 
 })(this);
