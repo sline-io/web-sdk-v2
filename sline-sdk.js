@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.0.1";
+  root.Sline.VERSION = "2.0.2";
 })(this);
 
 /**
@@ -128,8 +128,8 @@ window.console.log = this.console.log || function () {};
 
     Sline.checkoutButton = {
       id: config.checkoutButton.id, 
-      prefix: config.checkoutButton.prefix ?? 'Louer à partir de', 
-      suffix: config.checkoutButton.suffix ?? '/mois'
+      prefix: config?.checkoutButton?.prefix?.toString()?.trim() ?? '', 
+      suffix: config?.checkoutButton?.suffix?.toString()?.trim() ?? ''
     };
 
     checkoutButton.removeEventListener('click', Sline._OnCheckoutButtonClick);
@@ -154,19 +154,15 @@ window.console.log = this.console.log || function () {};
    * @param {Object} config Configuration options 
    */
   Sline._InitializeDurationSelector = function(config) {
-    if (!config.durationSelector || !config.durationSelector.id || config.durationSelector.id.toString().trim().length === 0) {
-      throw 'Invalid configuration: missing duration selector id'
-    }
+    Sline.durationSelector = {
+      id: config.durationSelector.id ?? null,
+      value: null
+    };
 
-    const durationSelector = document.getElementById(config.durationSelector.id);
+    const durationSelector = document.getElementById(Sline.durationSelector.id);
     if (! durationSelector) {
       throw 'Invalid configuration: duration selector does not exist'
     }
-
-    Sline.durationSelector = {
-      id: config.durationSelector.id,
-      value: null
-    };
 
     durationSelector.removeEventListener('click', Sline._OnDurationSelectorClick);
     durationSelector.addEventListener('click', Sline._OnDurationSelectorClick);
@@ -335,7 +331,9 @@ window.console.log = this.console.log || function () {};
       minPrice += Sline.prices[item.sku] ? Sline.prices[item.sku][item.duration].otherInstalmentPrice.amount * item.quantity : 0;
     });
 
-    checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${minPrice / 100}${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`
+    if (Sline.checkoutButton.prefix.length || Sline.checkoutButton.suffix.length) {
+      checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${minPrice / 100}${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`
+    }
 
     checkoutButton.removeAttribute('disabled');
   }
