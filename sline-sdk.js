@@ -173,7 +173,7 @@ window.console.log = this.console.log || function () {};
    */
   Sline._InitializeDurationSelector = function(config) {
     Sline.durationSelector = {
-      id: config.durationSelector.id ?? null,
+      id: config.durationSelector?.id ?? null,
       value: null
     };
 
