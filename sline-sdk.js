@@ -131,40 +131,28 @@ window.console.log = this.console.log || function () {};
       prefix: config?.checkoutButton?.prefix?.toString()?.trim() ?? '', 
       suffix: config?.checkoutButton?.suffix?.toString()?.trim() ?? '',
       events: {
-        hasOnClick: typeof config?.checkoutButton?.events?.onclick === 'function',
-        onClick: typeof config?.checkoutButton?.events?.onclick === 'function' ? config.checkoutButton.events.onclick : null
+        customOnClickEvent: config?.checkoutButton?.events?.customOnClickEvent ? !! config?.checkoutButton?.events?.customOnClickEvent : false
       }
     };
 
-    checkoutButton.removeEventListener('click', Sline._OnCheckoutButtonClick);
-    checkoutButton.addEventListener('click', Sline._OnCheckoutButtonClick);
+    if (! Sline.checkoutButton.events.customOnClickEvent) {
+      checkoutButton.removeEventListener('click', Sline.OnCheckoutButtonClick);
+      checkoutButton.addEventListener('click', Sline.OnCheckoutButtonClick);
+    }
   }
 
   /**
    * Catches the event on the checkout button click
    * @param {Event} e Event generated on click 
    */
-  Sline._OnCheckoutButtonClick = async function (e) {
+  Sline.OnCheckoutButtonClick = async function (e) {
     e.preventDefault();
     e.stopPropagation();
-
-    if (Sline.checkoutButton.events.hasOnClick) {
-      Sline.checkoutButton.events.onClick()
-        .then(async () => {
-          document.getElementById(Sline.checkoutButton.id).setAttribute('disabled', 'disabled');
-          document.getElementById(Sline.checkoutButton.id).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
-          await Sline._GenerateCheckoutURL(Sline.cart)
-          location.href = Sline.checkoutURL
-        })
-        .catch(e => {
-          console.log(e);
-        });
-    } else {
-      document.getElementById(Sline.checkoutButton.id).setAttribute('disabled', 'disabled');
-      document.getElementById(Sline.checkoutButton.id).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
-      await Sline._GenerateCheckoutURL(Sline.cart)
-      location.href = Sline.checkoutURL
-    }
+    
+    document.getElementById(Sline.checkoutButton.id).setAttribute('disabled', 'disabled');
+    document.getElementById(Sline.checkoutButton.id).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
+    await Sline._GenerateCheckoutURL(Sline.cart)
+    location.href = Sline.checkoutURL
   }
 
   /**
