@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.0.4";
+  root.Sline.VERSION = "2.0.5";
 })(this);
 
 /**
@@ -178,12 +178,14 @@ window.console.log = this.console.log || function () {};
     };
 
     const durationSelector = document.getElementById(Sline.durationSelector.id);
-    if (! durationSelector) {
-      throw 'Invalid configuration: duration selector does not exist'
+    if (durationSelector) {
+      durationSelector.removeEventListener('click', Sline._OnDurationSelectorClick);
+      durationSelector.addEventListener('click', Sline._OnDurationSelectorClick);
     }
 
-    durationSelector.removeEventListener('click', Sline._OnDurationSelectorClick);
-    durationSelector.addEventListener('click', Sline._OnDurationSelectorClick);
+    if (! durationSelector && Sline.durationSelector.id) {
+      throw 'Invalid configuration: duration selector does not exist'
+    }
   }
 
   /**
