@@ -99,12 +99,12 @@ window.console.log = this.console.log || function () {};
     }
 
     Sline.retailerSlug = config.retailer;
-    if (config.test) {
-      Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
-      Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
-    } else {
+    if (typeof config?.production === 'boolean' && config.production) {
       Sline.apiURL = "https://api.sline.io/checkout/cart";
       Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
+    } else {
+      Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
+      Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
     }
     Sline.cart = [];
     Sline.checkoutURL = "";
