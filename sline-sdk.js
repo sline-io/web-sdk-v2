@@ -80,8 +80,8 @@ window.console.log = this.console.log || function () {};
    * @param {Config} config Configuration options
    */
   Sline.Initialize = function (config) {
-    if (typeof config !== 'object') {
-      throw 'Invalid initialization: configuration options should be an object'
+    if (typeof config !== "object") {
+      throw "Invalid initialization: configuration options should be an object";
     }
 
     Sline._Initialize(config);
@@ -94,17 +94,17 @@ window.console.log = this.console.log || function () {};
    * @param {Object} config Configuration options
    */
   Sline._Initialize = function (config) {
-    if (! config.retailer) {
-      throw 'Invalid configuration: missing retailer information'
+    if (!config.retailer) {
+      throw "Invalid configuration: missing retailer information";
     }
 
     Sline.retailerSlug = config.retailer;
-    if (typeof config?.production === 'boolean' && config.production) {
+    if (typeof config?.production === "boolean" && config.production) {
       Sline.apiURL = "https://api.sline.io/checkout/cart";
       Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
     } else {
       Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
-      Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
+      Sline.baseCheckoutURL = "http://localhost:3000/checkout/";
     }
     Sline.cart = [];
     Sline.checkoutURL = "";
@@ -116,80 +116,97 @@ window.console.log = this.console.log || function () {};
    * Configures the checkout button and its events
    * @param {Object} config Configuration options
    */
-  Sline._InitializeCheckoutButton = function(config) {
-    if (!config.checkoutButton || !config.checkoutButton.id || config.checkoutButton.id.toString().trim().length === 0) {
-      throw 'Invalid configuration: missing checkout button id'
+  Sline._InitializeCheckoutButton = function (config) {
+    if (
+      !config.checkoutButton ||
+      !config.checkoutButton.id ||
+      config.checkoutButton.id.toString().trim().length === 0
+    ) {
+      throw "Invalid configuration: missing checkout button id";
     }
 
     const checkoutButton = document.getElementById(config.checkoutButton.id);
-    if (! checkoutButton) {
-      throw 'Invalid configuration: checkout button does not exist'
+    if (!checkoutButton) {
+      throw "Invalid configuration: checkout button does not exist";
     }
 
     Sline.checkoutButton = {
-      id: config.checkoutButton.id, 
-      prefix: config?.checkoutButton?.prefix?.toString()?.trim() ?? '', 
-      suffix: config?.checkoutButton?.suffix?.toString()?.trim() ?? '',
+      id: config.checkoutButton.id,
+      prefix: config?.checkoutButton?.prefix?.toString()?.trim() ?? "",
+      suffix: config?.checkoutButton?.suffix?.toString()?.trim() ?? "",
       events: {
-        customOnClickEvent: config?.checkoutButton?.events?.customOnClickEvent ? !! config?.checkoutButton?.events?.customOnClickEvent : false
-      }
+        customOnClickEvent: config?.checkoutButton?.events?.customOnClickEvent
+          ? !!config?.checkoutButton?.events?.customOnClickEvent
+          : false,
+      },
     };
 
-    if (! Sline.checkoutButton.events.customOnClickEvent) {
-      checkoutButton.removeEventListener('click', Sline.OnCheckoutButtonClick);
-      checkoutButton.addEventListener('click', Sline.OnCheckoutButtonClick);
+    if (!Sline.checkoutButton.events.customOnClickEvent) {
+      checkoutButton.removeEventListener("click", Sline.OnCheckoutButtonClick);
+      checkoutButton.addEventListener("click", Sline.OnCheckoutButtonClick);
     }
-  }
+  };
 
   /**
    * Catches the event on the checkout button click
-   * @param {Event} e Event generated on click 
+   * @param {Event} e Event generated on click
    */
   Sline.OnCheckoutButtonClick = async function (e) {
     e.preventDefault();
     e.stopPropagation();
-    
-    document.getElementById(Sline.checkoutButton.id).setAttribute('disabled', 'disabled');
-    document.getElementById(Sline.checkoutButton.id).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
+
+    if (Sline.cart.length === 0) return false
+
+    document
+      .getElementById(Sline.checkoutButton.id)
+      .setAttribute("disabled", "disabled");
+    document.getElementById(
+      Sline.checkoutButton.id
+    ).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
     await Sline._GenerateCheckoutURL(Sline.cart)
-    location.href = Sline.checkoutURL
-  }
+  };
 
   /**
    * Initializes the duration selector and its events
-   * @param {Object} config Configuration options 
+   * @param {Object} config Configuration options
    */
-  Sline._InitializeDurationSelector = function(config) {
+  Sline._InitializeDurationSelector = function (config) {
     Sline.durationSelector = {
       id: config.durationSelector?.id ?? null,
-      value: null
+      value: null,
     };
 
     const durationSelector = document.getElementById(Sline.durationSelector.id);
     if (durationSelector) {
-      durationSelector.removeEventListener('click', Sline._OnDurationSelectorClick);
-      durationSelector.addEventListener('click', Sline._OnDurationSelectorClick);
+      durationSelector.removeEventListener(
+        "click",
+        Sline._OnDurationSelectorClick
+      );
+      durationSelector.addEventListener(
+        "click",
+        Sline._OnDurationSelectorClick
+      );
     }
 
-    if (! durationSelector && Sline.durationSelector.id) {
-      throw 'Invalid configuration: duration selector does not exist'
+    if (!durationSelector && Sline.durationSelector.id) {
+      throw "Invalid configuration: duration selector does not exist";
     }
-  }
+  };
 
   /**
    * Catches the event when the duration changes
-   * @param {Event} e Event generated on click 
+   * @param {Event} e Event generated on click
    */
   Sline._OnDurationSelectorClick = async function (e) {
-    if (e.target.type === 'radio') {
+    if (e.target.type === "radio") {
       Sline.durationSelector.value = e.target.value;
       Sline.cart.forEach((item, k) => {
         Sline.cart[k].duration = e.target.value;
-      })
-      
+      });
+
       Sline._UpdateCheckoutButton();
     }
-  }
+  };
 
   /**
    * Add Product to Cart
@@ -206,19 +223,22 @@ window.console.log = this.console.log || function () {};
    * @param {int} qty of the product
    */
   Sline.UpdateCart = async function (sku, qty) {
-    var index = Sline.cart.findIndex(x => x.sku === sku);
+    var index = Sline.cart.findIndex((x) => x.sku === sku);
     if (index !== -1) {
       Sline.cart[index].quantity = qty;
     } else {
-      Sline.cart.push({ sku: sku, quantity: qty, duration: Sline.selectedDuration });
+      Sline.cart.push({
+        sku: sku,
+        quantity: qty,
+      });
     }
 
-    if (! Sline.prices[sku]) {
-      await Sline._GetDurationsAndPrices()
+    if (!Sline.prices[sku]) {
+      await Sline._GetDurationsAndPrices();
     }
 
     Sline._UpdateCheckoutButton();
-  }
+  };
 
   /**
    * Reset Cart
@@ -229,19 +249,19 @@ window.console.log = this.console.log || function () {};
 
   /**
    * Generates the checkout URL for a cart
-   * @param {Array} cart 
-   * @returns 
+   * @param {Array} cart
+   * @returns
    */
-  Sline._GenerateCheckoutURL = async function(cart) {
+  Sline._GenerateCheckoutURL = async function (cart) {
     var url = Sline.apiURL + "/import";
     var payload = {};
 
+    if (cart.length === 0) return false
+
     //TODO Remove the mapping when duration will be available in the lambda
-    payload["cart"] = cart.map(item => ({
-      sku: item.sku,
-      quantity: item.quantity
-    }));
+    payload["cart"] = cart;
     payload["retailerSlug"] = Sline.retailerSlug;
+    payload["duration"] = Sline.durationSelector.value;
 
     var myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
@@ -284,39 +304,45 @@ window.console.log = this.console.log || function () {};
     };
     try {
       const response = await fetch(url, requestOptions);
-      const responseData = await response.json()
-      .then(res => {
-        Sline.cart.forEach(item => {
+      const responseData = await response.json().then((res) => {
+        Sline.cart.forEach((item) => {
           //Sets the durations list and attribute a default duration for each item if no duration has been selected by the user
-          Sline.durations = res.map(duration => duration.numberOfInstalments).sort((a, b) => a - b);
-          if (! Sline.durationSelector.value) {
-            Sline.durationSelector.value = Sline.durations[Sline.durations.length - 1];
+          Sline.durations = res
+            .map((duration) => duration.numberOfInstalments)
+            .sort((a, b) => a - b);
+          if (!Sline.durationSelector.value) {
+            Sline.durationSelector.value =
+              Sline.durations[Sline.durations.length - 1];
 
-            Sline.cart.forEach(item => {
+            Sline.cart.forEach((item) => {
               item.duration = Sline.durationSelector.value;
-            })
+            });
           }
-        })
+        });
 
-        res.forEach(duration => {
+        res.forEach((duration) => {
           //Sets the price for each iteam based on the productPriceBreakdown
           duration.productsPriceBreakdown.forEach((productPrice, k) => {
             //TODO A corriger quand la lambda renverra la sku
-            if (! Sline.prices[productPrice.sku ?? Sline.cart[k].sku]) {
+            if (!Sline.prices[productPrice.sku ?? Sline.cart[k].sku]) {
               Sline.prices[productPrice.sku ?? Sline.cart[k].sku] = {};
             }
 
-            Sline.prices[productPrice.sku ?? Sline.cart[k].sku][`${duration.numberOfInstalments}`] = {
+            Sline.prices[productPrice.sku ?? Sline.cart[k].sku][
+              `${duration.numberOfInstalments}`
+            ] = {
               firstInstalmentPrice: productPrice.pricing.firstInstalmentPrice,
-              otherInstalmentPrice: productPrice.pricing.otherInstalmentPrice
+              otherInstalmentPrice: productPrice.pricing.otherInstalmentPrice,
             };
-          })
+          });
         });
-        
+
         // Event that can be catched by the retailer's dev team
-        document.body.dispatchEvent(new Event('SlinePricesReady', {
-          bubbles: true
-        }));
+        document.body.dispatchEvent(
+          new Event("SlinePricesReady", {
+            bubbles: true,
+          })
+        );
 
         Sline._UpdateCheckoutButton();
       });
@@ -332,37 +358,47 @@ window.console.log = this.console.log || function () {};
   Sline._UpdateCheckoutButton = async function () {
     //somme des prices
     const checkoutButton = document.getElementById(Sline.checkoutButton.id);
-    checkoutButton.setAttribute('disabled', 'disabled');
+    checkoutButton.setAttribute("disabled", "disabled");
 
     let minPrice = 0;
     Sline.cart.forEach((item, k) => {
-      minPrice += Sline.prices[item.sku] ? Sline.prices[item.sku][item.duration].otherInstalmentPrice.amount * item.quantity : 0;
+      minPrice += Sline.prices[item.sku]
+        ? Sline.prices[item.sku][item.duration].otherInstalmentPrice.amount *
+          item.quantity
+        : 0;
     });
 
-    if (Sline.checkoutButton.prefix.length || Sline.checkoutButton.suffix.length) {
-      checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${minPrice / 100}${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`
+    if (
+      Sline.checkoutButton.prefix.length ||
+      Sline.checkoutButton.suffix.length
+    ) {
+      checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${
+        minPrice / 100
+      }${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`;
     }
 
-    checkoutButton.removeAttribute('disabled');
-  }
+    checkoutButton.removeAttribute("disabled");
+  };
 
   /**
    * Returns a currency symbol based on its ISO name
    * @returns currency symbol
    */
   Sline._GetCurrencySymbol = function () {
-    let currencySymbol = '';
+    let currencySymbol = "";
     const firstKey = Object.keys(Sline.prices)[0];
 
-    if (! Sline.prices[firstKey]) return '€'
+    if (!Sline.prices[firstKey]) return "€";
 
-    switch (Sline.prices[firstKey][Sline.durations[0]].otherInstalmentPrice.currency) {
-      case 'USD':
-        currencySymbol = '$';
+    switch (
+      Sline.prices[firstKey][Sline.durations[0]].otherInstalmentPrice.currency
+    ) {
+      case "USD":
+        currencySymbol = "$";
         break;
-        
+
       default:
-        currencySymbol = '€';
+        currencySymbol = "€";
         break;
     }
 
@@ -373,18 +409,26 @@ window.console.log = this.console.log || function () {};
    * Calculates the price for a product and formats it
    * @param {Number} sku Item SKU
    * @param {Number} qty Qauntity
-   * @returns 
+   * @returns
    */
   Sline.GetPriceForProductWithDuration = function (sku, qty) {
-    return (Sline.prices[sku] ? (Sline.prices[sku][Sline.durationSelector.value].otherInstalmentPrice.amount * qty / 100) : 0) + Sline._GetCurrencySymbol()
-  }
+    return (
+      (Sline.prices[sku]
+        ? (Sline.prices[sku][Sline.durationSelector.value].otherInstalmentPrice
+            .amount *
+            qty) /
+          100
+        : 0) + Sline._GetCurrencySymbol()
+    );
+  };
 
   function debounce(func, timeout = 300) {
     let timer;
     return (...args) => {
       clearTimeout(timer);
-      timer = setTimeout(() => { func.apply(this, args); }, timeout);
+      timer = setTimeout(() => {
+        func.apply(this, args);
+      }, timeout);
     };
   }
-
 })(this);
