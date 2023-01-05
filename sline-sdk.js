@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.1.3";
+  root.Sline.VERSION = "2.1.4";
 })(this);
 
 /**
@@ -164,6 +164,12 @@ window.console.log = this.console.log || function () {};
       Sline.checkoutButton.id
     ).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
     await Sline._GenerateCheckoutURL(Sline.cart)
+    .then(response => {
+      if (Sline.checkoutButton.events.customOnClickEvent) {
+        location.href = Sline.checkoutURL
+      }
+      return response;
+    })
   };
 
   /**
