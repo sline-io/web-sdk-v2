@@ -261,7 +261,7 @@ window.console.log = this.console.log || function () {};
     //TODO Remove the mapping when duration will be available in the lambda
     payload["cart"] = cart;
     payload["retailerSlug"] = Sline.retailerSlug;
-    payload["duration"] = Sline.durationSelector.value;
+    //payload["duration"] = Sline.durationSelector.value;
 
     var myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
