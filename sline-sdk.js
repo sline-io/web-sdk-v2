@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.1.5";
+  root.Sline.VERSION = "2.1.6";
 })(this);
 
 /**
@@ -104,7 +104,7 @@ window.console.log = this.console.log || function () {};
       Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
     } else {
       Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
-      Sline.baseCheckoutURL = "http://localhost:3000/checkout/";
+      Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
     }
     Sline.cart = [];
     Sline.checkoutURL = "";
