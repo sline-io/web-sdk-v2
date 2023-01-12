@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.1.6";
+  root.Sline.VERSION = "2.1.7";
 })(this);
 
 /**
@@ -165,7 +165,7 @@ window.console.log = this.console.log || function () {};
     ).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
     await Sline._GenerateCheckoutURL(Sline.cart)
     .then(response => {
-      if (Sline.checkoutButton.events.customOnClickEvent) {
+      if (!Sline.checkoutButton.events.customOnClickEvent) {
         location.href = Sline.checkoutURL
       }
       return response;
@@ -231,11 +231,11 @@ window.console.log = this.console.log || function () {};
   Sline.UpdateCart = async function (sku, qty) {
     var index = Sline.cart.findIndex((x) => x.sku === sku);
     if (index !== -1) {
-      Sline.cart[index].quantity = qty;
+      Sline.cart[index].quantity = Number(qty);
     } else {
       Sline.cart.push({
         sku: sku,
-        quantity: qty,
+        quantity: Number(qty),
       });
     }
 
@@ -264,10 +264,9 @@ window.console.log = this.console.log || function () {};
 
     if (cart.length === 0) return false
 
-    //TODO Remove the mapping when duration will be available in the lambda
-    payload["cart"] = cart;
+    payload["cart"] = cart.map(item => ({sku: item.sku, quantity: item.quantity}));
     payload["retailerSlug"] = Sline.retailerSlug;
-    //payload["duration"] = Sline.durationSelector.value;
+    payload["duration"] = Sline.durationSelector.value;
 
     var myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
@@ -319,10 +318,6 @@ window.console.log = this.console.log || function () {};
           if (!Sline.durationSelector.value) {
             Sline.durationSelector.value =
               Sline.durations[Sline.durations.length - 1];
-
-            Sline.cart.forEach((item) => {
-              item.duration = Sline.durationSelector.value;
-            });
           }
         });
 
@@ -369,7 +364,7 @@ window.console.log = this.console.log || function () {};
     let minPrice = 0;
     Sline.cart.forEach((item, k) => {
       minPrice += Sline.prices[item.sku]
-        ? Sline.prices[item.sku][item.duration].otherInstalmentPrice.amount *
+        ? Sline.prices[item.sku][Sline.durationSelector.value].otherInstalmentPrice.amount *
           item.quantity
         : 0;
     });
