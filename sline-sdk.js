@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.1.7";
+  root.Sline.VERSION = "2.2.0";
 })(this);
 
 /**
@@ -85,7 +85,7 @@ window.console.log = this.console.log || function () {};
     }
 
     Sline._Initialize(config);
-    Sline._InitializeCheckoutButton(config);
+    Sline.InitializeCheckoutButton(config);
     Sline._InitializeDurationSelector(config);
   };
 
@@ -103,7 +103,7 @@ window.console.log = this.console.log || function () {};
       Sline.apiURL = "https://api.sline.io/checkout/cart";
       Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
     } else {
-      Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
+      Sline.apiURL = "https://checkout.staging.sline.io/checkout/cart";
       Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
     }
     Sline.cart = [];
@@ -116,22 +116,23 @@ window.console.log = this.console.log || function () {};
    * Configures the checkout button and its events
    * @param {Object} config Configuration options
    */
-  Sline._InitializeCheckoutButton = function (config) {
+  Sline.InitializeCheckoutButton = function (config) {
     if (
       !config.checkoutButton ||
-      !config.checkoutButton.id ||
-      config.checkoutButton.id.toString().trim().length === 0
+      (!config.checkoutButton.id && config.checkoutButton?.classPath.toString().trim().length === 0) ||
+      (!config.checkoutButton.classPath && config.checkoutButton?.id.toString().trim().length === 0)
     ) {
-      throw "Invalid configuration: missing checkout button id";
+      throw "Invalid configuration: missing checkout button id or classPath";
     }
 
-    const checkoutButton = document.getElementById(config.checkoutButton.id);
+    const checkoutButton = config.checkoutButton.id ? document.getElementById(config.checkoutButton.id) : document.querySelectorAll(config.checkoutButton.classPath);
     if (!checkoutButton) {
       throw "Invalid configuration: checkout button does not exist";
     }
 
     Sline.checkoutButton = {
       id: config.checkoutButton.id,
+      classPath: config.checkoutButton.classPath,
       prefix: config?.checkoutButton?.prefix?.toString()?.trim() ?? "",
       suffix: config?.checkoutButton?.suffix?.toString()?.trim() ?? "",
       events: {
@@ -141,9 +142,17 @@ window.console.log = this.console.log || function () {};
       },
     };
 
-    if (!Sline.checkoutButton.events.customOnClickEvent) {
+    if (!Sline.checkoutButton.events.customOnClickEvent && config.checkoutButton.id) {
       checkoutButton.removeEventListener("click", Sline.OnCheckoutButtonClick);
       checkoutButton.addEventListener("click", Sline.OnCheckoutButtonClick);
+    } else if (!Sline.checkoutButton.events.customOnClickEvent && config.checkoutButton.classPath) {
+      const buttons = document.querySelectorAll(config.checkoutButton.classPath);
+      if (buttons.length) {
+        buttons.forEach(button => {
+          button.removeEventListener("click", Sline.OnCheckoutButtonClick);
+          button.addEventListener("click", Sline.OnCheckoutButtonClick);
+        })
+      }
     }
   };
 
@@ -157,12 +166,8 @@ window.console.log = this.console.log || function () {};
 
     if (Sline.cart.length === 0) return false
 
-    document
-      .getElementById(Sline.checkoutButton.id)
-      .setAttribute("disabled", "disabled");
-    document.getElementById(
-      Sline.checkoutButton.id
-    ).innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
+    e.target.setAttribute("disabled", "disabled");
+    e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
     await Sline._GenerateCheckoutURL(Sline.cart)
     .then(response => {
       if (!Sline.checkoutButton.events.customOnClickEvent) {
@@ -313,6 +318,7 @@ window.console.log = this.console.log || function () {};
         Sline.cart.forEach((item) => {
           //Sets the durations list and attribute a default duration for each item if no duration has been selected by the user
           Sline.durations = res
+            .filter(duration => duration.productsPriceBreakdown.length === Sline.cart.length)
             .map((duration) => duration.numberOfInstalments)
             .sort((a, b) => a - b);
           if (!Sline.durationSelector.value) {
@@ -358,27 +364,38 @@ window.console.log = this.console.log || function () {};
    */
   Sline._UpdateCheckoutButton = async function () {
     //somme des prices
-    const checkoutButton = document.getElementById(Sline.checkoutButton.id);
-    checkoutButton.setAttribute("disabled", "disabled");
-
-    let minPrice = 0;
-    Sline.cart.forEach((item, k) => {
-      minPrice += Sline.prices[item.sku]
-        ? Sline.prices[item.sku][Sline.durationSelector.value].otherInstalmentPrice.amount *
-          item.quantity
-        : 0;
-    });
-
-    if (
-      Sline.checkoutButton.prefix.length ||
-      Sline.checkoutButton.suffix.length
-    ) {
-      checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${
-        minPrice / 100
-      }${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`;
-    }
-
-    checkoutButton.removeAttribute("disabled");
+    const buttons = Sline.checkoutButton.id ? [document.getElementById(Sline.checkoutButton.id)] : document.querySelectorAll(Sline.checkoutButton.classPath);
+    
+    buttons.forEach(checkoutButton => {
+      checkoutButton.setAttribute("disabled", "disabled");
+  
+      let minPrice = 0;
+      if (Sline.checkoutButton.id) {
+        Sline.cart.forEach((item, k) => {
+          minPrice += Sline.prices[item.sku]
+            ? Sline.prices[item.sku][Sline.durationSelector.value].otherInstalmentPrice.amount *
+              item.quantity
+            : 0;
+        });
+      } else {
+        const sku = checkoutButton.getAttribute('data-sku')
+        const index = Sline.cart.map(item => item.sku).indexOf(sku)
+        if (Sline.prices[sku]) {
+          minPrice = Sline.prices[sku][Sline.durationSelector.value].otherInstalmentPrice.amount * Sline.cart[index].quantity
+        }
+      }
+  
+      if (
+        Sline.checkoutButton.prefix.length ||
+        Sline.checkoutButton.suffix.length
+      ) {
+        checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${
+          minPrice / 100
+        }${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`;
+      }
+  
+      checkoutButton.removeAttribute("disabled");
+    })
   };
 
   /**
