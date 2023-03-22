@@ -271,7 +271,13 @@ window.console.log = this.console.log || function () {};
 
     payload["cart"] = cart.map(item => ({sku: item.sku, quantity: item.quantity}));
     payload["retailerSlug"] = Sline.retailerSlug;
-    payload["duration"] = Sline.durationSelector.value;
+    const durationSelector = document.getElementById(Sline.durationSelector.id);
+    if (durationSelector) {
+      payload["duration"] = Sline.durationSelector.value;
+    } else {
+      payload["duration"] = null;
+    }
+
 
     var myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
