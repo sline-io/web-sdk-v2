@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "2.2.0";
+  root.Sline.VERSION = "3.0.0";
 })(this);
 
 /**
@@ -97,18 +97,22 @@ window.console.log = this.console.log || function () {};
     if (!config.retailer) {
       throw "Invalid configuration: missing retailer information";
     }
-
+    Sline.ApiToken = config.apiToken
     Sline.retailerSlug = config.retailer;
     if (typeof config?.production === "boolean" && config.production) {
-      Sline.apiURL = "https://api.sline.io/checkout/cart";
-      Sline.baseCheckoutURL = "https://checkout.sline.io/checkout/";
+      Sline.apiURL = "https://sline-api.herokuapp.com/v1";
+      Sline.baseCheckoutURL = "https://sline-checkout-git-payment-slineio.vercel.app/";
     } else {
-      Sline.apiURL = "https://api.staging.sline.io/checkout/cart";
-      Sline.baseCheckoutURL = "https://checkout.staging.sline.io/checkout/";
+      Sline.apiURL = "https://sline-api.herokuapp.com/v1";
+      Sline.baseCheckoutURL = "https://sline-checkout-git-payment-slineio.vercel.app/";
     }
-    Sline.cart = [];
+    Sline.customer = {};
+    Sline.shippingAddress = {};
+    Sline.billingAddress = {};
+    Sline.options = {};
     Sline.checkoutURL = "";
-    Sline.prices = [];
+    Sline.prices = {};
+    Sline.taxRate = config.taxRate ?? 20.0
     Sline.durations = [];
   };
 
@@ -164,11 +168,11 @@ window.console.log = this.console.log || function () {};
     e.preventDefault();
     e.stopPropagation();
 
-    if (Sline.cart.length === 0) return false
+    if (Sline.lineItems.length === 0) return false
 
     e.target.setAttribute("disabled", "disabled");
     e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
-    await Sline._GenerateCheckoutURL(Sline.cart)
+    await Sline._GenerateCheckoutURL(Sline.lineItems)
     .then(response => {
       if (!Sline.checkoutButton.events.customOnClickEvent) {
         location.href = Sline.checkoutURL
@@ -211,8 +215,8 @@ window.console.log = this.console.log || function () {};
   Sline._OnDurationSelectorClick = async function (e) {
     if (e.target.type === "radio") {
       Sline.durationSelector.value = e.target.value;
-      Sline.cart.forEach((item, k) => {
-        Sline.cart[k].duration = e.target.value;
+      Sline.lineItems.forEach((item, k) => {
+        Sline.lineItems[k].duration = e.target.value;
       });
 
       Sline._UpdateCheckoutButton();
@@ -220,31 +224,42 @@ window.console.log = this.console.log || function () {};
   };
 
   /**
-   * Add Product to Cart
-   * @param {string} sku of the product
-   * @param {int} qty of the product
+   * Add LineItem to LineItems
+   * @param {LineItem} lineItem
+   * @param {int} qty
    */
-  Sline.AddCart = function (sku, qty) {
-    Sline.UpdateCart(sku, qty);
+  Sline.AddLineItem = function (lineItem, qty) {
+    Sline.UpdateLineItem(lineItem, qty);
   };
 
   /**
-   * Update Product in Cart
-   * @param {string} sku of the product
+   * Add Options 
+   * @param {Options} options of session
+   */
+  Sline.setOptions = function (options) {
+    Sline.options = options;
+  };
+
+  /**
+   * Update LineItem in LineItems
+   * @param {LineItem} lineItem 
    * @param {int} qty of the product
    */
-  Sline.UpdateCart = async function (sku, qty) {
-    var index = Sline.cart.findIndex((x) => x.sku === sku);
+  Sline.UpdateLineItem = async function (lineItem, qty) {
+    // Check if already inside LineItems
+    var index = Sline.lineItems.findIndex((x) => x.reference === lineItem.reference);
+    // if already inside update quantity 
     if (index !== -1) {
-      Sline.cart[index].quantity = Number(qty);
+      Sline.lineItems[index].quantity = Number(qty);
     } else {
-      Sline.cart.push({
-        sku: sku,
+    // if not push inside LineItems 
+      Sline.lineItems.push({
+        ...lineItem,
         quantity: Number(qty),
       });
     }
 
-    if (!Sline.prices[sku]) {
+    if (!Sline.prices[lineItem.reference]) {
       await Sline._GetDurationsAndPrices();
     }
 
@@ -252,36 +267,71 @@ window.console.log = this.console.log || function () {};
   };
 
   /**
-   * Reset Cart
+   * Remove lineItems already set
    */
-  Sline.ResetCart = function () {
-    Sline.cart = [];
+  Sline.ResetLineItems = function () {
+    Sline.lineItems = [];
+  };
+
+  /**
+   * Add customer
+   * @param {Customer} customer
+   * @returns
+   */
+  Sline.AddCustomer= function (customer) {
+    Sline.customer = customer;
+  };
+
+  /**
+   * Remove customer already set
+   */
+  Sline.ResetCustomer= function () {
+    Sline.customer = {};
+  };
+
+  /**
+   * Add shipping address
+   * @param {Address} address
+   * @returns
+   */
+  Sline.AddShippingAddress= function (address) {
+    Sline.shippingAddress = address;
+  };
+
+  /**
+   * Add billing address
+   * @param {Address} address
+   * @returns
+   */
+  Sline.AddBillingAddress= function (address) {
+    Sline.billingAddress = address;
   };
 
   /**
    * Generates the checkout URL for a cart
-   * @param {Array} cart
+   * @param {Array} lineItems
    * @returns
    */
-  Sline._GenerateCheckoutURL = async function (cart) {
-    var url = Sline.apiURL + "/import";
+  Sline._GenerateCheckoutURL = async function (lineItems) {
+    var url = Sline.apiURL + "/sessions";
     var payload = {};
 
-    if (cart.length === 0) return false
+    if (lineItems.length === 0) return false
 
-    payload["cart"] = cart.map(item => ({sku: item.sku, quantity: item.quantity}));
-    payload["retailerSlug"] = Sline.retailerSlug;
-    const durationSelector = document.getElementById(Sline.durationSelector.id);
-    if (durationSelector) {
-      payload["duration"] = Sline.durationSelector.value;
-    } else {
-      payload["duration"] = null;
-    }
+    // Prepare payload
+    payload["line_items_attributes"] = lineItems;
+    payload["billing_address_attributes"] = Sline.billingAddress;
+    payload["shipping_address_attributes"] = Sline.shippingAddress;
+    payload["session_customer_attributes"] = Sline.customer;
+    payload["selected_duration"] = Number(Sline.durationSelector.value);
+    Object.keys(Sline.options).map(k => payload[k] = Sline.options[k]);
 
-
+    // Set Header
     var myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
     myHeaders.append("content-type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${Sline.ApiToken}`);
+
     var raw = JSON.stringify(payload);
     var requestOptions = {
       method: "POST",
@@ -292,7 +342,10 @@ window.console.log = this.console.log || function () {};
     try {
       const response = await fetch(url, requestOptions);
       const responseData = await response.json();
-      Sline.checkoutURL = Sline.baseCheckoutURL + responseData.id;
+
+      // Set checkout redirection url baseUrl/:sessionId?retailerApiKey=ApiToken
+      Sline.checkoutURL = Sline.baseCheckoutURL + responseData.id + `?retailerApiKey=${Sline.ApiToken}`;
+      
       return responseData;
     } catch (error) {
       return console.warn(error);
@@ -303,14 +356,14 @@ window.console.log = this.console.log || function () {};
    * Gets the duration options for a cart
    */
   Sline._GetDurationsAndPrices = debounce(async function () {
-    var url = Sline.apiURL + "/pricing";
+    var url = Sline.apiURL + "/plans";
     var payload = {};
-    payload["cart"] = Sline.cart;
-    payload["retailerSlug"] = Sline.retailerSlug;
+    payload["line_items"] = Sline.lineItems;
 
     var myHeaders = new Headers();
     myHeaders.append("accept", "application/json");
     myHeaders.append("content-type", "application/json");
+    myHeaders.append("Authorization", `Bearer ${Sline.ApiToken}`);
     var raw = JSON.stringify(payload);
     var requestOptions = {
       method: "POST",
@@ -321,36 +374,30 @@ window.console.log = this.console.log || function () {};
     try {
       const response = await fetch(url, requestOptions);
       const responseData = await response.json().then((res) => {
-        Sline.cart.forEach((item) => {
-          //Sets the durations list and attribute a default duration for each item if no duration has been selected by the user
-          Sline.durations = res
-            .filter(duration => duration.productsPriceBreakdown.length === Sline.cart.length)
-            .map((duration) => duration.numberOfInstalments)
+        Sline.lineItems.forEach((lineItem) => {
+          Sline.durations = res.line_items
+            .map((lineItem) => lineItem.plans.map(plan => plan.duration))[0]
             .sort((a, b) => a - b);
           if (!Sline.durationSelector.value) {
             Sline.durationSelector.value =
-              Sline.durations[Sline.durations.length - 1];
+            Sline.durations[Sline.durations.length - 1];
           }
         });
 
-        res.forEach((duration) => {
-          //Sets the price for each iteam based on the productPriceBreakdown
-          duration.productsPriceBreakdown.forEach((productPrice, k) => {
-            //TODO A corriger quand la lambda renverra la sku
-            if (!Sline.prices[productPrice.sku ?? Sline.cart[k].sku]) {
-              Sline.prices[productPrice.sku ?? Sline.cart[k].sku] = {};
-            }
-
-            Sline.prices[productPrice.sku ?? Sline.cart[k].sku][
-              `${duration.numberOfInstalments}`
-            ] = {
-              firstInstalmentPrice: productPrice.pricing.firstInstalmentPrice,
-              otherInstalmentPrice: productPrice.pricing.otherInstalmentPrice,
+        res.line_items.forEach((lineItem) => {
+          Sline.prices[lineItem.reference]= {}
+          lineItem.plans.forEach((plan) => {
+            Sline.prices[lineItem.reference][plan.duration] = {
+              firstInstalmentPrice: plan.first_instalment,
+              firstInstalmentPriceWithTax: plan.first_instalment * (1 + Sline.taxRate / 100),
+              otherInstalmentPrice: plan.other_instalment,
+              otherInstalmentPriceWithTax: plan.other_instalment * (1 + Sline.taxRate / 100),
+              taxRate: Sline.taxRate
             };
           });
         });
 
-        // Event that can be catched by the retailer's dev team
+        // Event that can be caught by the retailer's dev team
         document.body.dispatchEvent(
           new Event("SlinePricesReady", {
             bubbles: true,
@@ -377,17 +424,17 @@ window.console.log = this.console.log || function () {};
   
       let minPrice = 0;
       if (Sline.checkoutButton.id) {
-        Sline.cart.forEach((item, k) => {
-          minPrice += Sline.prices[item.sku]
-            ? Sline.prices[item.sku][Sline.durationSelector.value].otherInstalmentPrice.amount *
+        Sline.lineItems.forEach((item, k) => {
+          minPrice += Sline.prices[item.reference]
+            ? Sline.prices[item.reference][Sline.durationSelector.value].otherInstalmentPrice *
               item.quantity
             : 0;
         });
       } else {
-        const sku = checkoutButton.getAttribute('data-sku')
-        const index = Sline.cart.map(item => item.sku).indexOf(sku)
-        if (Sline.prices[sku]) {
-          minPrice = Sline.prices[sku][Sline.durationSelector.value].otherInstalmentPrice.amount * Sline.cart[index].quantity
+        const reference = checkoutButton.getAttribute('data-reference')
+        const index = Sline.lineItems.map(item => item.reference).indexOf(reference)
+        if (Sline.prices[reference]) {
+          minPrice = Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPrice * Sline.lineItems[index].quantity
         }
       }
   
@@ -409,37 +456,19 @@ window.console.log = this.console.log || function () {};
    * @returns currency symbol
    */
   Sline._GetCurrencySymbol = function () {
-    let currencySymbol = "";
-    const firstKey = Object.keys(Sline.prices)[0];
-
-    if (!Sline.prices[firstKey]) return "€";
-
-    switch (
-      Sline.prices[firstKey][Sline.durations[0]].otherInstalmentPrice.currency
-    ) {
-      case "USD":
-        currencySymbol = "$";
-        break;
-
-      default:
-        currencySymbol = "€";
-        break;
-    }
-
-    return currencySymbol;
+    return  "€";
   };
 
   /**
    * Calculates the price for a product and formats it
-   * @param {Number} sku Item SKU
-   * @param {Number} qty Qauntity
+   * @param {Number} reference Item
+   * @param {Number} qty Quantity
    * @returns
    */
-  Sline.GetPriceForProductWithDuration = function (sku, qty) {
+  Sline.GetPriceForProductWithDuration = function (reference, qty) {
     return (
-      (Sline.prices[sku]
-        ? (Sline.prices[sku][Sline.durationSelector.value].otherInstalmentPrice
-            .amount *
+      (Sline.prices[reference]
+        ? (Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPrice *
             qty) /
           100
         : 0) + Sline._GetCurrencySymbol()

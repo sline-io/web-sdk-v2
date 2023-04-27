@@ -1,190 +1,247 @@
 <!doctype html>
 <html>
-    <head>
-        <script src="./sline-sdk.js"></script>
-        <style>
-            #period-selector label.selected, #period-selector label:hover {
-                border-color: #000;
-            }
-            #period-selector label {
-                border: 1px solid #fff;
-                border-radius: 4px;
-                padding: 4px;
-            }
-        </style>
-    </head>
-    <body>
-        <div style="display: flex; flex-direction: row; align-content: center; align-items: center;">
-            <article data-sku="iphone13problue128go">
-                <figure style="margin: 0 0 16px 0; display: flex; flex-direction: column;">
-                    <img src="https://media.ldlc.com/r1600/ld/products/00/05/88/64/LD0005886472_1_0005927794.jpg" width="70" height="70" style="align-self: center;" />    
-                    <figcaption>
-                        <strong>iPhone 13 Pro Bleu 128Go</strong>    
-                    </figcaption>
-                </figure>
-                <div class="price">
-                    <strong>Prix de vente: </strong>
-                    <span></span>    
-                </div>   
-                <div class="instalment">
-                    <strong>Mensualité: </strong>
-                    <span></span>    
-                </div>    
-                <div class="quantity">
-                   <span class="minus" data-sku="iphone13problue128go" style="background-color: black; border-bottom-left-radius: 4px; border-top-left-radius: 4px; color: white; padding: 4px 12px;">-</span>
-                   <input type="number" value="1" min="0" max="10" step="1" data-sku="iphone13problue128go" />
-                   <span class="plus" data-sku="iphone13problue128go" style="background-color: black; border-bottom-right-radius: 4px; border-top-right-radius: 4px; color: white; padding: 4px 12px;">+</span>
-                </div>
-                <div class="amount">
-                    <strong>Total: </strong>
-                    <span></span>    
-                </div>
-                <footer>
-                    <a nohref class="addToCart" data-sku="iphone13problue128go" id="addToCart">Ajouter au panier</a>
-                </footer>
-            </article>
-            <article data-sku="234234">
-                <figure style="margin: 0 0 16px 0; display: flex; flex-direction: column;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Nintendo_Switch_Console.png" width="70" height="70" style="align-self: center;" />    
-                    <figcaption>
-                        <strong>Nintendo Switch</strong>    
-                    </figcaption>
-                </figure>
-                <div class="price">
-                    <strong>Prix de vente: </strong>
-                    <span></span>    
-                </div>   
-                <div class="instalment">
-                    <strong>Mensualité: </strong>
-                    <span></span>    
-                </div>    
-                <div class="quantity">
-                   <span class="minus" data-sku="234234" style="background-color: black; border-bottom-left-radius: 4px; border-top-left-radius: 4px; color: white; padding: 4px 12px;">-</span>
-                   <input type="number" value="1" min="0" max="10" step="1" data-sku="234234" />
-                   <span class="plus" data-sku="234234" style="background-color: black; border-bottom-right-radius: 4px; border-top-right-radius: 4px; color: white; padding: 4px 12px;">+</span>
-                </div>
-                <div class="amount">
-                    <strong>Total: </strong>
-                    <span></span>    
-                </div>
-                <footer>
-                    <a nohref class="addToCart" data-sku="234234">Ajouter au panier</a>
-                </footer>
-            </article>
-        </div>
-        <div id="period-selector" class="text-right">
-        </div>
-        <script>
-            addEventListener('DOMContentLoaded', start);  
-            
-            function start() {
-                Sline.Initialize({
-                    retailer: 'fnac',
-                    production: false,
-                    checkoutButton: {
-                        //id: 'addToCart',
-                        classPath: '.addToCart',
-                        prefix: 'Louer à partir de ',
-                        suffix: '/mois'
-                    },
-                    durationSelector: {
-                        id: 'period-selector'
-                    }
-                })
-                Sline.ResetCart();
-                Sline.AddCart('iphone13problue128go', 1);
-                Sline.AddCart('234234', 1);
-    
-                removeEventListener('SlinePricesReady', SlinePricesReadyListener)
-                addEventListener('SlinePricesReady', SlinePricesReadyListener);
-        
-                const selector = document.getElementById('period-selector')
+  <head>
+    <script src="./sline-sdk.js"></script>
+    <style>
+      #period-selector label.selected,
+      #period-selector label:hover {
+        border-color: #000;
+      }
 
-                document.querySelectorAll('#period-selector label').forEach(elt => {
-                    elt.removeEventListener('click', periodLabelClickListener);
-                    elt.addEventListener('click', periodLabelClickListener);
-                });
+      #period-selector label {
+        border: 1px solid #fff;
+        border-radius: 4px;
+        padding: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="display: flex; flex-direction: row; align-content: center; align-items: center;">
+      <article style="margin-right: 32px;" data-reference="TRANSATLEVOHETRE">
+        <figure style="margin: 0 0 16px 0; display: flex; flex-direction: column;"><img src="https://i0.wp.com/www.charliecraneparis.com/wp-content/uploads/2022/11/LEVO-LM-3-4-SEAT-retouche-1-scaled.jpg?fit=2560%2C2560&ssl=1" width="70" height="70" style="align-self: center;" />
+          <figcaption><strong>TRANSATLEVOHETRE</strong></figcaption>
+        </figure>
+        <div style="margin-top: 8px;" class="price"><strong>Prix de vente: </strong><span></span></div>
+        <div style="margin-top: 8px;" class="instalment"><strong>Mensualité: </strong><span></span></div>
+        <div style="margin-top: 8px;" class="quantity"><span class="minus" data-reference="TRANSATLEVOHETRE" style="background-color: black; border-bottom-left-radius: 4px; border-top-left-radius: 4px; color: white; padding: 4px 12px;">-</span><input type="number" value="1" min="0" max="10" step="1" data-sku="iphone13problue128go" /><span class="plus" data-reference="TRANSATLEVOHETRE" style="background-color: black; border-bottom-right-radius: 4px; border-top-right-radius: 4px; color: white; padding: 4px 12px;">+</span></div>
+        <div style="margin-top: 8px;" class="amount"><strong>Total: </strong><span></span></div>
+        <div style="margin-top: 8px;" style="margin-top: 16px;"><a style="margin-top: 16px; background-color: #005CFF; border-radius: 8px; padding: 8px;" nohref class="addToCart" data-reference="TRANSATLEVOHETRE" id="addToCart">Ajouter au panier</a></div>
+      </article>
+      <article data-reference="iphone">
+        <figure style="margin: 0 0 16px 0; display: flex; flex-direction: column;"><img src="https://media.ldlc.com/r1600/ld/products/00/05/88/64/LD0005886472_1_0005927794.jpg" width="70" height="70" style="align-self: center;" />
+          <figcaption><strong>iphone</strong></figcaption>
+        </figure>
+        <div style="margin-top: 8px;" class="price"><strong>Prix de vente: </strong><span></span></div>
+        <div style="margin-top: 8px;" class="instalment"><strong>Mensualité: </strong><span></span></div>
+        <div style="margin-top: 8px;" class="quantity"><span class="minus" data-reference="iphone" style="background-color: black; border-bottom-left-radius: 4px; border-top-left-radius: 4px; color: white; padding: 4px 12px;">-</span><input type="number" value="1" min="0" max="10" step="1" data-sku="iphone13problue128go" /><span class="plus" data-reference="TRANSATLEVOHETRE" style="background-color: black; border-bottom-right-radius: 4px; border-top-right-radius: 4px; color: white; padding: 4px 12px;">+</span></div>
+        <div style="margin-top: 8px;" class="amount"><strong>Total: </strong><span></span></div>
+      </article>
 
-                selector.querySelectorAll('#period-selector input[type=radio][name=duration]').forEach(elt => {
-                    elt.removeEventListener('change', setInstalmentPrice)
-                    elt.addEventListener('change', setInstalmentPrice);
-                })
+    </div>
+    <div id="period-selector" class="text-right"></div>
+    <script>
+      addEventListener('DOMContentLoaded', start);
 
-                document.querySelectorAll('article').forEach(product => {
-                    var btnminus = product.querySelector('.quantity .minus');
-                    var btnplus = product.querySelector('.quantity .plus');
-                    
-                    btnminus.addEventListener('click', qtyminus);
-                    btnplus.addEventListener('click', qtyplus);
-                })
-            }
+      function start() {
+        Sline.Initialize({
+          retailer: 'fnac',
+          apiToken: 'sk_ret_qo5Xg6zxCnp56XPLjB9VRUeAFD6SnP',
+          production: false,
+          taxRate: 20.0,
+          checkoutButton: {
+            id: 'addToCart',
+            classPath: '.addToCart',
+            prefix: 'Louer à partir de ',
+            suffix: '/mois'
+          },
+          durationSelector: {
+            id: 'period-selector'
+          }
+        })
+        Sline.AddShippingAddress({
+            "gender": "male",
+            "first_name": "Customer firstName",
+            "last_name": "Customer LastName",
+            "company_name": "Sline",
+            "street_address": "24 rue de la paix",
+            "street_address_2": "Portail marron",
+            "city": "Paris",
+            "zip_code": "75008",
+            "region": "IDF",
+            "country": "FR",
+            "email": "customer@sline.io",
+            "phone": "+33666666666"
+        })
+        Sline.AddBillingAddress({
+            "gender": "male",
+            "first_name": "Customer firstName",
+            "last_name": "Customer LastName",
+            "company_name": "Sline",
+            "street_address": "24 rue de la paix",
+            "street_address_2": "Portail marron",
+            "city": "Paris",
+            "zip_code": "75008",
+            "region": "IDF",
+            "country": "FR",
+            "email": "customer@sline.io",
+            "phone": "+33666666666"
+        })
+        Sline.AddCustomer({
+          "gender": "male",
+          "first_name": "Customer firstName",
+          "last_name": "Customer LastName",
+          "email": "customer@sline.io",
+          "phone": "+33666666666",
+          "date_of_birth": "1991-05-03",
+          "customer_type": "company",
+          "company_name": "Sline",
+          "company_registration_id": "89970948900012",
+          "company_vat_id": "FR77899709489"
+        })
+        Sline.ResetLineItems();
+        Sline.AddLineItem({
+            "name": "Transat LEVO Hêtre",
+            "reference": "TRANSATLEVOHETRE",
+            "item_type": "physical",
+            "image": "https://i0.wp.com/www.charliecraneparis.com/wp-content/uploads/2022/11/LEVO-LM-3-4-SEAT-retouche-1-scaled.jpg?fit=2560%2C2560&ssl=1",
+            "merchant_data": "",
+            "unit_price": 20000,
+            "quantity": 1,
+            "rent": true,
+            "coverage_configuration_code": "CC-COV-1",
+            "product_url": "https://www.charliecraneparis.com/fr/produit/baby-rocker-levo-with-louise-misha-blue-cream-flowers-cushion/",
+            "msrp": 20000,
+            "product_value": 20000,
+            "brand": "LEVO",
+            "category_path": "",
+            "global_trade_item_number": "",
+            "manufacturer_part_number": "",
+            "item_variant": "",
+            "plans": [{
+                    "duration": 6,
+                    "first_instalment": 4900,
+                    "other_instalment": 9900
+                },
+                {
+                    "duration": 12,
+                    "first_instalment": 4900,
+                    "other_instalment": 9900
+                },
+                {
+                    "duration": 24,
+                    "first_instalment": 4900,
+                    "other_instalment": 9900
+                }]
+        }, 1);
+        Sline.AddLineItem({
+            "name": "iphone",
+            "reference": "iphone",
+            "item_type": "physical",
+            "image": "https://media.ldlc.com/r1600/ld/products/00/05/88/64/LD0005886472_1_0005927794.jpg",
+            "merchant_data": "",
+            "unit_price": 1000,
+            "quantity": 1,
+            "rent": true,
+            "coverage_configuration_code": "CC-COV-1",
+            "product_url": "https://www.charliecraneparis.com/fr/produit/baby-rocker-levo-with-louise-misha-blue-cream-flowers-cushion/",
+            "msrp": 1000,
+            "product_value": 1000,
+            "brand": "LEVO",
+            "category_path": "",
+            "global_trade_item_number": "",
+            "manufacturer_part_number": "",
+            "item_variant": "",
+        }, 1);
+        Sline.setOptions({
+            "locale": "fr-FR",
+            "lifespan": 290,
+            "merchant_customer_reference": "cc_cus_1",
+            "merchant_order_reference": "cc_order_1",
+            "merchant_data": "Livraison souhaitée le 10/10/24",
+        })
 
-            function qtyminus(e) {
-                var input = e.target.closest('.quantity').querySelector('input');
-                var min = Number(input.getAttribute('min'));
-                var max = Number(input.getAttribute('max'));
-                var step = Number(input.getAttribute('step'));
-                var current = Number(input.value);
-                var newval = (current - step);
-                if(newval < min) {
-                    newval = min;
-                } else if(newval > max) {
-                    newval = max;
-                } 
-                input.value = Number(newval);
-                Sline.UpdateCart(input.getAttribute('data-sku'), input.value);
-                setInstalmentPrice();
-                e.preventDefault();
-            }
+        removeEventListener('SlinePricesReady', SlinePricesReadyListener)
+        addEventListener('SlinePricesReady', SlinePricesReadyListener);
+        const selector = document.getElementById('period-selector')
+        document.querySelectorAll('#period-selector label').forEach(elt => {
+          elt.removeEventListener('click', periodLabelClickListener);
+          elt.addEventListener('click', periodLabelClickListener);
+        });
+        selector.querySelectorAll('#period-selector input[type=radio][name=duration]').forEach(elt => {
+          elt.removeEventListener('change', setInstalmentPrice)
+          elt.addEventListener('change', setInstalmentPrice);
+        })
+        document.querySelectorAll('article').forEach(product => {
+          var btnminus = product.querySelector('.quantity .minus');
+          var btnplus = product.querySelector('.quantity .plus');
+          btnminus.addEventListener('click', qtyminus);
+          btnplus.addEventListener('click', qtyplus);
+        })
+      }
 
-            function qtyplus(e) {
-                var input = e.target.closest('.quantity').querySelector('input')
-                var current = Number(input.value);
-                var min = Number(input.getAttribute('min'));
-                var max = Number(input.getAttribute('max'));
-                var step = Number(input.getAttribute('step'));
-                var newval = (current + step);
-                if(newval > max) newval = max;
-                input.value = Number(newval);
-                Sline.UpdateCart(input.getAttribute('data-sku'), input.value);
-                setInstalmentPrice();
-                e.preventDefault();
-            }
+      function qtyminus(e) {
+        var input = e.target.closest('.quantity').querySelector('input');
+        var min = Number(input.getAttribute('min'));
+        var max = Number(input.getAttribute('max'));
+        var step = Number(input.getAttribute('step'));
+        var current = Number(input.value);
+        var newval = (current - step);
+        if (newval < min) {
+          newval = min;
+        } else if (newval > max) {
+          newval = max;
+        }
+        input.value = Number(newval);
+        Sline.UpdateLineItem(input.getAttribute('data-reference'), input.value);
+        setInstalmentPrice();
+        e.preventDefault();
+      }
 
-            function setInstalmentPrice() {
-                document.querySelectorAll('article').forEach(row => {
-                    const sku = row.getAttribute('data-sku')
-                    const qty = row.querySelector('input').value
-                    row.querySelector('.instalment span').textContent = Sline.GetPriceForProductWithDuration(sku, 1)
-                    row.querySelector('.amount span').textContent = Sline.GetPriceForProductWithDuration(sku, qty)
-                })
-            }
+      function qtyplus(e) {
+        var input = e.target.closest('.quantity').querySelector('input')
+        var current = Number(input.value);
+        var min = Number(input.getAttribute('min'));
+        var max = Number(input.getAttribute('max'));
+        var step = Number(input.getAttribute('step'));
+        var newval = (current + step);
+        if (newval > max) newval = max;
+        input.value = Number(newval);
+        Sline.UpdateLineItem(input.getAttribute('data-reference'), input.value);
+        setInstalmentPrice();
+        e.preventDefault();
+      }
 
-            function periodLabelClickListener(e) {
-                document.querySelectorAll('#period-selector label').forEach(elt1 => elt1.classList.remove('selected'))
-                e.target.classList.add('selected');
-            }
+      function setInstalmentPrice() {
+        document.querySelectorAll('article').forEach(row => {
+          const reference = row.getAttribute('data-reference')
+          const qty = row.querySelector('input').value
+          row.querySelector('.instalment span').textContent = Sline.GetPriceForProductWithDuration(reference, 1)
+          row.querySelector('.amount span').textContent = Sline.GetPriceForProductWithDuration(reference, qty)
+        })
+      }
 
-            function SlinePricesReadyListener() {
-                setInstalmentPrice();
-            
-                const selector = document.getElementById('period-selector')
-                selector.innerHTML = ''
-                Sline.durations.forEach(duration => {
-                    selector.insertAdjacentHTML('beforeend', `<input type="radio" name="duration" id="duration${duration}" value="${duration}" style="visibility: hidden" ${Sline.durationSelector.value === duration ? 'checked' : ''}/>`)
-                    selector.insertAdjacentHTML('beforeend', `<label for="duration${duration}" ${Sline.durationSelector.value === duration ? 'class="selected"' : ''}>${duration !== -1 ? duration + ' mois' : 'Sans engagement'}</label>`);
-                })
+      function periodLabelClickListener(e) {
+        document.querySelectorAll('#period-selector label').forEach(elt1 => elt1.classList.remove('selected'))
+        e.target.classList.add('selected');
+      }
 
-                document.querySelectorAll('#period-selector label').forEach(elt => {
-                    elt.removeEventListener('click', periodLabelClickListener);
-                    elt.addEventListener('click', periodLabelClickListener);
-                });
-
-                selector.querySelectorAll('#period-selector input[type=radio][name=duration]').forEach(elt => {
-                    elt.removeEventListener('change', setInstalmentPrice)
-                    elt.addEventListener('change', setInstalmentPrice);
-                })
-            }
-        </script>
-    </body>
+      function SlinePricesReadyListener() {
+        setInstalmentPrice();
+        const selector = document.getElementById('period-selector')
+        selector.innerHTML = ''
+        Sline.durations.forEach(duration => {
+          selector.insertAdjacentHTML('beforeend', `<input style="margin-top: 24px;" type="radio" name="duration" id="duration${duration}" value="${duration}" style="visibility: hidden" ${Sline.durationSelector.value === duration ? 'checked' : ''}/>`)
+          selector.insertAdjacentHTML('beforeend', `<label for="duration${duration}" ${Sline.durationSelector.value === duration ? 'class="selected"' : ''}>${duration !== -1 ? duration + ' mois' : 'Sans engagement'}</label>`);
+        })
+        document.querySelectorAll('#period-selector label').forEach(elt => {
+          elt.removeEventListener('click', periodLabelClickListener);
+          elt.addEventListener('click', periodLabelClickListener);
+        });
+        selector.querySelectorAll('#period-selector input[type=radio][name=duration]').forEach(elt => {
+          elt.removeEventListener('change', setInstalmentPrice)
+          elt.addEventListener('change', setInstalmentPrice);
+        })
+      }
+    </script>
+  </body>
 </html>
