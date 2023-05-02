@@ -308,7 +308,7 @@ window.console.log = this.console.log || function () {};
   };
 
   /**
-   * Generates the checkout URL for a cart
+   * Generates the checkout URL with lineItems
    * @param {Array} lineItems
    * @returns
    */
@@ -353,7 +353,7 @@ window.console.log = this.console.log || function () {};
   };
 
   /**
-   * Gets the duration options for a cart
+   * Gets the duration options for current lineItems
    */
   Sline._GetDurationsAndPrices = debounce(async function () {
     var url = Sline.apiURL + "/plans";
