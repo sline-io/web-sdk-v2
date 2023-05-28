@@ -100,10 +100,10 @@ window.console.log = this.console.log || function () {};
     Sline.ApiToken = config.apiToken
     Sline.retailerSlug = config.retailer;
     if (typeof config?.production === "boolean" && config.production) {
-      Sline.apiURL = "https://api.stg.sline.io";
+      Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
     } else {
-      Sline.apiURL = "https://api.stg.sline.io";
+      Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
     }
     Sline.customer = {};
@@ -114,6 +114,7 @@ window.console.log = this.console.log || function () {};
     Sline.prices = {};
     Sline.taxRate = config.taxRate ?? 20.0
     Sline.durations = [];
+    Sline.lineItems = [];
   };
 
   /**
