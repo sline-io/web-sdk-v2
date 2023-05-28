@@ -427,7 +427,7 @@ window.console.log = this.console.log || function () {};
       if (Sline.checkoutButton.id) {
         Sline.lineItems.forEach((item, k) => {
           minPrice += Sline.prices[item.reference]
-            ? Sline.prices[item.reference][Sline.durationSelector.value].otherInstalmentPrice *
+            ? Sline.prices[item.reference][Sline.durationSelector.value].otherInstalmentPriceWithTax *
               item.quantity
             : 0;
         });
@@ -435,7 +435,7 @@ window.console.log = this.console.log || function () {};
         const reference = checkoutButton.getAttribute('data-reference')
         const index = Sline.lineItems.map(item => item.reference).indexOf(reference)
         if (Sline.prices[reference]) {
-          minPrice = Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPrice * Sline.lineItems[index].quantity
+          minPrice = Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPriceWithTax * Sline.lineItems[index].quantity
         }
       }
   
