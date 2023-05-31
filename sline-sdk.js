@@ -194,14 +194,25 @@ window.console.log = this.console.log || function () {};
 
     const durationSelector = document.getElementById(Sline.durationSelector.id);
     if (durationSelector) {
-      durationSelector.removeEventListener(
-        "click",
-        Sline._OnDurationSelectorClick
-      );
-      durationSelector.addEventListener(
-        "click",
-        Sline._OnDurationSelectorClick
-      );
+      if (durationSelector.type === "select-one") {
+        durationSelector.removeEventListener(
+          "change",
+          Sline._OnDurationSelectorClick
+        );
+        durationSelector.addEventListener(
+          "change",
+          Sline._OnDurationSelectorClick
+        );
+      } else {
+        durationSelector.removeEventListener(
+          "click",
+          Sline._OnDurationSelectorClick
+        );
+        durationSelector.addEventListener(
+          "click",
+          Sline._OnDurationSelectorClick
+        );
+      }
     }
 
     if (!durationSelector && Sline.durationSelector.id) {
@@ -214,11 +225,8 @@ window.console.log = this.console.log || function () {};
    * @param {Event} e Event generated on click
    */
   Sline._OnDurationSelectorClick = async function (e) {
-    if (e.target.type === "radio") {
+    if (e.target.type === "radio" || e.target.type === "select-one") {
       Sline.durationSelector.value = e.target.value;
-      Sline.lineItems.forEach((item, k) => {
-        Sline.lineItems[k].duration = e.target.value;
-      });
 
       Sline._UpdateCheckoutButton();
     }
