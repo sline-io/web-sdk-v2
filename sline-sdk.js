@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "3.0.0";
+  root.Sline.VERSION = "3.0.1";
 })(this);
 
 /**
@@ -100,8 +100,8 @@ window.console.log = this.console.log || function () {};
     Sline.ApiToken = config.apiToken
     Sline.retailerSlug = config.retailer;
     if (typeof config?.production === "boolean" && config.production) {
-      Sline.apiURL = "https://api.stg.sline.io/v1";
-      Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
+      Sline.apiURL = "https://api.prod.sline.io/v1";
+      Sline.baseCheckoutURL = "https://checkout.prod.sline.io/";
     } else {
       Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
@@ -168,7 +168,6 @@ window.console.log = this.console.log || function () {};
   Sline.OnCheckoutButtonClick = async function (e) {
     e.preventDefault();
     e.stopPropagation();
-
     if (Sline.lineItems.length === 0) return false
 
     e.target.setAttribute("disabled", "disabled");
@@ -178,6 +177,12 @@ window.console.log = this.console.log || function () {};
       if (!Sline.checkoutButton.events.customOnClickEvent) {
         location.href = Sline.checkoutURL
       }
+      // Event that can be caught by the retailer's dev team
+      document.body.dispatchEvent(
+        new Event("CheckoutUrlReady", {
+          bubbles: true,
+        })
+      );
       return response;
     })
   };
@@ -316,6 +321,15 @@ window.console.log = this.console.log || function () {};
     Sline.billingAddress = address;
   };
 
+  /**
+  * Generates the checkout URL with lineItems
+  * @param {Array} lineItems
+  * @returns
+  */
+  Sline.GenerateCheckoutURL = async function (lineItems) {
+    Sline._GenerateCheckoutURL(lineItems)
+  }
+  
   /**
    * Generates the checkout URL with lineItems
    * @param {Array} lineItems
