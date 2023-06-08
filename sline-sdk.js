@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "3.0.1";
+  root.Sline.VERSION = "3.0.2";
 })(this);
 
 /**
@@ -177,12 +177,7 @@ window.console.log = this.console.log || function () {};
       if (!Sline.checkoutButton.events.customOnClickEvent) {
         location.href = Sline.checkoutURL
       }
-      // Event that can be caught by the retailer's dev team
-      document.body.dispatchEvent(
-        new Event("CheckoutUrlReady", {
-          bubbles: true,
-        })
-      );
+      
       return response;
     })
   };
@@ -369,6 +364,13 @@ window.console.log = this.console.log || function () {};
       // Set checkout redirection url baseUrl/:sessionId?retailerApiKey=ApiToken
       Sline.checkoutURL = Sline.baseCheckoutURL + '/' + responseData.id + `?retailerApiKey=${Sline.ApiToken}`;
       
+      // Event that can be caught by the retailer's dev team
+      document.body.dispatchEvent(
+        new Event("CheckoutUrlReady", {
+          bubbles: true,
+        })
+      );
+
       return responseData;
     } catch (error) {
       return console.warn(error);
