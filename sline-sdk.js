@@ -101,7 +101,7 @@ window.console.log = this.console.log || function () {};
     Sline.retailerSlug = config.retailer;
     if (typeof config?.production === "boolean" && config.production) {
       Sline.apiURL = "https://api.prod.sline.io/v1";
-      Sline.baseCheckoutURL = "https://checkout.prod.sline.io/";
+      Sline.baseCheckoutURL = "https://subscribe.sline.io/";
     } else {
       Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
@@ -414,9 +414,9 @@ window.console.log = this.console.log || function () {};
           lineItem.plans.forEach((plan) => {
             Sline.prices[lineItem.reference][plan.duration] = {
               firstInstalmentPrice: plan.first_instalment,
-              firstInstalmentPriceWithTax: Math.round(plan.first_instalment * (1 + Sline.taxRate / 100) * 100) / 100,
+              firstInstalmentPriceWithTax: plan.first_instalment * (1 + Sline.taxRate / 100),
               otherInstalmentPrice: plan.other_instalment,
-              otherInstalmentPriceWithTax:  Math.round(plan.other_instalment * (1 + Sline.taxRate / 100) * 100) / 100,
+              otherInstalmentPriceWithTax: plan.other_instalment * (1 + Sline.taxRate / 100),
               taxRate: Sline.taxRate
             };
           });
@@ -467,7 +467,7 @@ window.console.log = this.console.log || function () {};
         Sline.checkoutButton.suffix.length
       ) {
         checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${
-          minPrice / 100
+         Math.round((minPrice / 100) * 100) / 100
         }${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`;
       }
   
