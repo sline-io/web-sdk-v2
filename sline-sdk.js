@@ -101,7 +101,7 @@ window.console.log = this.console.log || function () {};
     Sline.retailerSlug = config.retailer;
     if (typeof config?.production === "boolean" && config.production) {
       Sline.apiURL = "https://api.prod.sline.io/v1";
-      Sline.baseCheckoutURL = "https://checkout.prod.sline.io/";
+      Sline.baseCheckoutURL = "https://subscribe.sline.io/";
     } else {
       Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
