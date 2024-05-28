@@ -180,7 +180,7 @@ window.console.log = this.console.log || function () {};
     e.stopPropagation();
     if (Sline.lineItems.length === 0) return false;
 
-    e.target.setAttribute("disabled", "disabled");
+    e.target.setAttribute("disabled", "true");
     e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
     await Sline._GenerateCheckoutURL(Sline.lineItems).then((response) => {
       if (!Sline.checkoutButton.events.customOnClickEvent) {
@@ -464,7 +464,7 @@ window.console.log = this.console.log || function () {};
       : document.querySelectorAll(Sline.checkoutButton.classPath);
 
     buttons.forEach((checkoutButton) => {
-      checkoutButton.setAttribute("disabled", "disabled");
+      checkoutButton.setAttribute("disabled", "true");
 
       let minPrice = 0;
       if (Sline.checkoutButton.id) {
