@@ -458,6 +458,10 @@ window.console.log = this.console.log || function () {};
    * Updates the checkout button text
    */
   Sline._UpdateCheckoutButton = async function () {
+    // if sline prices aren't loaded yet, dont update checkout buttons
+
+    if (Object.keys(Sline.prices).length === 0) return;
+
     //somme des prices
     const buttons = Sline.checkoutButton.id
       ? [document.getElementById(Sline.checkoutButton.id)]
