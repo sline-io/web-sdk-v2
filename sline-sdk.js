@@ -181,13 +181,12 @@ window.console.log = this.console.log || function () {};
 
     e.target.setAttribute("disabled", "true");
     e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
-    await Sline._GenerateCheckoutURL(Sline.lineItems).then((response) => {
-      if (!Sline.checkoutButton.events.customOnClickEvent) {
-        location.href = Sline.checkoutURL;
-      }
 
-      return response;
-    });
+    await Sline._GenerateCheckoutURL(Sline.lineItems);
+
+    if (!Sline.checkoutButton.events.customOnClickEvent) {
+      location.href = Sline.checkoutURL;
+    }
   };
 
   /**
@@ -370,15 +369,16 @@ window.console.log = this.console.log || function () {};
       body: raw,
       redirect: "follow",
     };
-    try {
-      const response = await fetch(url, requestOptions);
-      const responseData = await response.json();
 
+    const response = await fetch(url, requestOptions);
+    const data = await response.json();
+
+    if (response.status === 201) {
       // Set checkout redirection url baseUrl/:sessionId?retailerApiKey=ApiToken
       Sline.checkoutURL =
         Sline.baseCheckoutURL +
         "/" +
-        responseData.id +
+        data.id +
         `?retailerApiKey=${Sline.ApiToken}`;
 
       // Event that can be caught by the retailer's dev team
@@ -388,9 +388,9 @@ window.console.log = this.console.log || function () {};
         })
       );
 
-      return responseData;
-    } catch (error) {
-      return console.warn(error);
+      return Sline.checkoutURL;
+    } else {
+      throw Error(data.error);
     }
   };
 
