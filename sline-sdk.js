@@ -97,7 +97,7 @@ window.console.log = this.console.log || function () {};
     if (!config.retailer) {
       throw "Invalid configuration: missing retailer information";
     }
-    Sline.ApiToken = config.apiToken
+    Sline.ApiToken = config.apiToken;
     Sline.retailerSlug = config.retailer;
     if (typeof config?.production === "boolean" && config.production) {
       Sline.apiURL = "https://api.prod.sline.io/v1";
@@ -112,7 +112,7 @@ window.console.log = this.console.log || function () {};
     Sline.options = {};
     Sline.checkoutURL = "";
     Sline.prices = {};
-    Sline.taxRate = config.taxRate ?? 20.0
+    Sline.taxRate = config.taxRate ?? 20.0;
     Sline.durations = [];
     Sline.lineItems = [];
   };
@@ -124,13 +124,17 @@ window.console.log = this.console.log || function () {};
   Sline.InitializeCheckoutButton = function (config) {
     if (
       !config.checkoutButton ||
-      (!config.checkoutButton.id && config.checkoutButton?.classPath.toString().trim().length === 0) ||
-      (!config.checkoutButton.classPath && config.checkoutButton?.id.toString().trim().length === 0)
+      (!config.checkoutButton.id &&
+        config.checkoutButton?.classPath.toString().trim().length === 0) ||
+      (!config.checkoutButton.classPath &&
+        config.checkoutButton?.id.toString().trim().length === 0)
     ) {
       throw "Invalid configuration: missing checkout button id or classPath";
     }
 
-    const checkoutButton = config.checkoutButton.id ? document.getElementById(config.checkoutButton.id) : document.querySelectorAll(config.checkoutButton.classPath);
+    const checkoutButton = config.checkoutButton.id
+      ? document.getElementById(config.checkoutButton.id)
+      : document.querySelectorAll(config.checkoutButton.classPath);
     if (!checkoutButton) {
       throw "Invalid configuration: checkout button does not exist";
     }
@@ -147,16 +151,24 @@ window.console.log = this.console.log || function () {};
       },
     };
 
-    if (!Sline.checkoutButton.events.customOnClickEvent && config.checkoutButton.id) {
+    if (
+      !Sline.checkoutButton.events.customOnClickEvent &&
+      config.checkoutButton.id
+    ) {
       checkoutButton.removeEventListener("click", Sline.OnCheckoutButtonClick);
       checkoutButton.addEventListener("click", Sline.OnCheckoutButtonClick);
-    } else if (!Sline.checkoutButton.events.customOnClickEvent && config.checkoutButton.classPath) {
-      const buttons = document.querySelectorAll(config.checkoutButton.classPath);
+    } else if (
+      !Sline.checkoutButton.events.customOnClickEvent &&
+      config.checkoutButton.classPath
+    ) {
+      const buttons = document.querySelectorAll(
+        config.checkoutButton.classPath
+      );
       if (buttons.length) {
-        buttons.forEach(button => {
+        buttons.forEach((button) => {
           button.removeEventListener("click", Sline.OnCheckoutButtonClick);
           button.addEventListener("click", Sline.OnCheckoutButtonClick);
-        })
+        });
       }
     }
   };
@@ -168,18 +180,17 @@ window.console.log = this.console.log || function () {};
   Sline.OnCheckoutButtonClick = async function (e) {
     e.preventDefault();
     e.stopPropagation();
-    if (Sline.lineItems.length === 0) return false
+    if (Sline.lineItems.length === 0) return false;
 
     e.target.setAttribute("disabled", "disabled");
     e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
-    await Sline._GenerateCheckoutURL(Sline.lineItems)
-    .then(response => {
+    await Sline._GenerateCheckoutURL(Sline.lineItems).then((response) => {
       if (!Sline.checkoutButton.events.customOnClickEvent) {
-        location.href = Sline.checkoutURL
+        location.href = Sline.checkoutURL;
       }
-      
+
       return response;
-    })
+    });
   };
 
   /**
@@ -242,7 +253,7 @@ window.console.log = this.console.log || function () {};
   };
 
   /**
-   * Add Options 
+   * Add Options
    * @param {Options} options of session
    */
   Sline.setOptions = function (options) {
@@ -251,17 +262,19 @@ window.console.log = this.console.log || function () {};
 
   /**
    * Update LineItem in LineItems
-   * @param {LineItem} lineItem 
+   * @param {LineItem} lineItem
    * @param {int} qty of the product
    */
   Sline.UpdateLineItem = async function (lineItem, qty) {
     // Check if already inside LineItems
-    var index = Sline.lineItems.findIndex((x) => x.reference === lineItem.reference);
-    // if already inside update quantity 
+    var index = Sline.lineItems.findIndex(
+      (x) => x.reference === lineItem.reference
+    );
+    // if already inside update quantity
     if (index !== -1) {
       Sline.lineItems[index].quantity = Number(qty);
     } else {
-    // if not push inside LineItems 
+      // if not push inside LineItems
       Sline.lineItems.push({
         ...lineItem,
         quantity: Number(qty),
@@ -287,14 +300,14 @@ window.console.log = this.console.log || function () {};
    * @param {Customer} customer
    * @returns
    */
-  Sline.AddCustomer= function (customer) {
+  Sline.AddCustomer = function (customer) {
     Sline.customer = customer;
   };
 
   /**
    * Remove customer already set
    */
-  Sline.ResetCustomer= function () {
+  Sline.ResetCustomer = function () {
     Sline.customer = {};
   };
 
@@ -303,7 +316,7 @@ window.console.log = this.console.log || function () {};
    * @param {Address} address
    * @returns
    */
-  Sline.AddShippingAddress= function (address) {
+  Sline.AddShippingAddress = function (address) {
     Sline.shippingAddress = address;
   };
 
@@ -312,19 +325,19 @@ window.console.log = this.console.log || function () {};
    * @param {Address} address
    * @returns
    */
-  Sline.AddBillingAddress= function (address) {
+  Sline.AddBillingAddress = function (address) {
     Sline.billingAddress = address;
   };
 
   /**
-  * Generates the checkout URL with lineItems
-  * @param {Array} lineItems
-  * @returns
-  */
+   * Generates the checkout URL with lineItems
+   * @param {Array} lineItems
+   * @returns
+   */
   Sline.GenerateCheckoutURL = async function (lineItems) {
-    Sline._GenerateCheckoutURL(lineItems)
-  }
-  
+    Sline._GenerateCheckoutURL(lineItems);
+  };
+
   /**
    * Generates the checkout URL with lineItems
    * @param {Array} lineItems
@@ -334,7 +347,7 @@ window.console.log = this.console.log || function () {};
     var url = Sline.apiURL + "/sessions";
     var payload = {};
 
-    if (lineItems.length === 0) return false
+    if (lineItems.length === 0) return false;
 
     // Prepare payload
     payload["line_items_attributes"] = lineItems;
@@ -342,7 +355,7 @@ window.console.log = this.console.log || function () {};
     payload["shipping_address_attributes"] = Sline.shippingAddress;
     payload["session_customer_attributes"] = Sline.customer;
     payload["selected_duration"] = Number(Sline.durationSelector.value);
-    Object.keys(Sline.options).map(k => payload[k] = Sline.options[k]);
+    Object.keys(Sline.options).map((k) => (payload[k] = Sline.options[k]));
 
     // Set Header
     var myHeaders = new Headers();
@@ -362,8 +375,12 @@ window.console.log = this.console.log || function () {};
       const responseData = await response.json();
 
       // Set checkout redirection url baseUrl/:sessionId?retailerApiKey=ApiToken
-      Sline.checkoutURL = Sline.baseCheckoutURL + '/' + responseData.id + `?retailerApiKey=${Sline.ApiToken}`;
-      
+      Sline.checkoutURL =
+        Sline.baseCheckoutURL +
+        "/" +
+        responseData.id +
+        `?retailerApiKey=${Sline.ApiToken}`;
+
       // Event that can be caught by the retailer's dev team
       document.body.dispatchEvent(
         new Event("CheckoutUrlReady", {
@@ -401,23 +418,25 @@ window.console.log = this.console.log || function () {};
       const responseData = await response.json().then((res) => {
         Sline.lineItems.forEach((lineItem) => {
           Sline.durations = res.line_items
-            .map((lineItem) => lineItem.plans.map(plan => plan.duration))[0]
+            .map((lineItem) => lineItem.plans.map((plan) => plan.duration))[0]
             .sort((a, b) => a - b);
           if (!Sline.durationSelector.value) {
             Sline.durationSelector.value =
-            Sline.durations[Sline.durations.length - 1];
+              Sline.durations[Sline.durations.length - 1];
           }
         });
 
         res.line_items.forEach((lineItem) => {
-          Sline.prices[lineItem.reference]= {}
+          Sline.prices[lineItem.reference] = {};
           lineItem.plans.forEach((plan) => {
             Sline.prices[lineItem.reference][plan.duration] = {
               firstInstalmentPrice: plan.first_instalment,
-              firstInstalmentPriceWithTax: plan.first_instalment * (1 + Sline.taxRate / 100),
+              firstInstalmentPriceWithTax:
+                plan.first_instalment * (1 + Sline.taxRate / 100),
               otherInstalmentPrice: plan.other_instalment,
-              otherInstalmentPriceWithTax: plan.other_instalment * (1 + Sline.taxRate / 100),
-              taxRate: Sline.taxRate
+              otherInstalmentPriceWithTax:
+                plan.other_instalment * (1 + Sline.taxRate / 100),
+              taxRate: Sline.taxRate,
             };
           });
         });
@@ -442,37 +461,44 @@ window.console.log = this.console.log || function () {};
    */
   Sline._UpdateCheckoutButton = async function () {
     //somme des prices
-    const buttons = Sline.checkoutButton.id ? [document.getElementById(Sline.checkoutButton.id)] : document.querySelectorAll(Sline.checkoutButton.classPath);
-    
-    buttons.forEach(checkoutButton => {
+    const buttons = Sline.checkoutButton.id
+      ? [document.getElementById(Sline.checkoutButton.id)]
+      : document.querySelectorAll(Sline.checkoutButton.classPath);
+
+    buttons.forEach((checkoutButton) => {
       checkoutButton.setAttribute("disabled", "disabled");
-  
+
       let minPrice = 0;
       if (Sline.checkoutButton.id) {
         Sline.lineItems.forEach((item, k) => {
           minPrice += Sline.prices[item.reference]
-            ? Sline.prices[item.reference][Sline.durationSelector.value].otherInstalmentPriceWithTax
+            ? Sline.prices[item.reference][Sline.durationSelector.value]
+                .otherInstalmentPriceWithTax
             : 0;
         });
       } else {
-        const reference = checkoutButton.getAttribute('data-reference')
-        const index = Sline.lineItems.map(item => item.reference).indexOf(reference)
+        const reference = checkoutButton.getAttribute("data-reference");
+        const index = Sline.lineItems
+          .map((item) => item.reference)
+          .indexOf(reference);
         if (Sline.prices[reference]) {
-          minPrice = Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPriceWithTax
+          minPrice =
+            Sline.prices[reference][Sline.durationSelector.value]
+              .otherInstalmentPriceWithTax;
         }
       }
-  
+
       if (
         Sline.checkoutButton.prefix.length ||
         Sline.checkoutButton.suffix.length
       ) {
         checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${
-         Math.round((minPrice / 100) * 100) / 100
+          Math.round((minPrice / 100) * 100) / 100
         }${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`;
       }
-  
+
       checkoutButton.removeAttribute("disabled");
-    })
+    });
   };
 
   /**
@@ -480,7 +506,7 @@ window.console.log = this.console.log || function () {};
    * @returns currency symbol
    */
   Sline._GetCurrencySymbol = function () {
-    return  "€";
+    return "€";
   };
 
   /**
@@ -492,7 +518,8 @@ window.console.log = this.console.log || function () {};
   Sline.GetPriceForProductWithDuration = function (reference, qty) {
     return (
       (Sline.prices[reference]
-        ? (Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPrice *
+        ? (Sline.prices[reference][Sline.durationSelector.value]
+            .otherInstalmentPrice *
             qty) /
           100
         : 0) + Sline._GetCurrencySymbol()
