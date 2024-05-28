@@ -182,7 +182,20 @@ window.console.log = this.console.log || function () {};
     e.target.setAttribute("disabled", "true");
     e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
 
-    await Sline._GenerateCheckoutURL(Sline.lineItems);
+    let lineItems = Sline.lineItems;
+
+    const reference = e.target.getAttribute("data-reference");
+    if (!Sline.checkoutButton.id && reference) {
+      const referenceLineItem = lineItems.find(
+        (lineItem) => lineItem.reference === reference
+      );
+
+      if (referenceLineItem) {
+        lineItems = [referenceLineItem];
+      }
+    }
+
+    await Sline._GenerateCheckoutURL(lineItems);
 
     if (!Sline.checkoutButton.events.customOnClickEvent) {
       location.href = Sline.checkoutURL;
@@ -482,9 +495,7 @@ window.console.log = this.console.log || function () {};
         });
       } else {
         const reference = checkoutButton.getAttribute("data-reference");
-        const index = Sline.lineItems
-          .map((item) => item.reference)
-          .indexOf(reference);
+
         if (Sline.prices[reference]) {
           minPrice =
             Sline.prices[reference][Sline.durationSelector.value]
