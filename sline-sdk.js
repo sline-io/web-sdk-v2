@@ -94,11 +94,8 @@ window.console.log = this.console.log || function () {};
    * @param {Object} config Configuration options
    */
   Sline._Initialize = function (config) {
-    if (!config.retailer) {
-      throw "Invalid configuration: missing retailer information";
-    }
     Sline.ApiToken = config.apiToken;
-    Sline.retailerSlug = config.retailer;
+
     if (typeof config?.production === "boolean" && config.production) {
       Sline.apiURL = "https://api.prod.sline.io/v1";
       Sline.baseCheckoutURL = "https://subscribe.sline.io/";
@@ -106,6 +103,7 @@ window.console.log = this.console.log || function () {};
       Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
     }
+
     Sline.customer = {};
     Sline.shippingAddress = {};
     Sline.billingAddress = {};
