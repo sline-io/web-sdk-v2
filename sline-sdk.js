@@ -104,9 +104,9 @@ window.console.log = this.console.log || function () {};
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
     }
 
-    Sline.customer = {};
-    Sline.shippingAddress = {};
-    Sline.billingAddress = {};
+    Sline.customer = undefined;
+    Sline.shippingAddress = undefined;
+    Sline.billingAddress = undefined;
     Sline.options = {};
     Sline.checkoutURL = "";
     Sline.prices = {};
@@ -304,7 +304,7 @@ window.console.log = this.console.log || function () {};
    * Remove customer already set
    */
   Sline.ResetCustomer = function () {
-    Sline.customer = {};
+    Sline.customer = undefined;
   };
 
   /**
