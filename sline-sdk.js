@@ -178,7 +178,6 @@ window.console.log = this.console.log || function () {};
   Sline.OnCheckoutButtonClick = async function (e) {
     e.preventDefault();
     e.stopPropagation();
-    if (Sline.lineItems.length === 0) return false;
 
     e.target.setAttribute("disabled", "true");
     e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
@@ -345,7 +344,10 @@ window.console.log = this.console.log || function () {};
     var url = Sline.apiURL + "/sessions";
     var payload = {};
 
-    if (lineItems.length === 0) return false;
+    if (lineItems.length === 0)
+      throw Error(
+        "Cannot create a checkout without line items. Please add at least one line item : Sline.AddLineItem(lineItem, quantity)."
+      );
 
     // Prepare payload
     payload["line_items_attributes"] = lineItems;
