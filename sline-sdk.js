@@ -13,7 +13,7 @@ window.console.log = this.console.log || function () {};
  */
 (function (root) {
   root.Sline = root.Sline || {};
-  root.Sline.VERSION = "3.0.2";
+  root.Sline.VERSION = "3.1.0";
 })(this);
 
 /**
@@ -29,49 +29,59 @@ window.console.log = this.console.log || function () {};
    *
    * Contains all Sline API classes and functions.
    */
-  var Sline = root.Sline;
+  const Sline = root.Sline;
 
-  var svgLoader = `<svg version="1.1" id="L4" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" style="height: 25px; width: 66px; margin-left: -20px; margin-top: -3px;"
-  viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
-  <circle fill="#fff" stroke="none" cx="6" cy="50" r="10">
+  const svgLoader = `<svg
+  version="1.1"
+  viewBox="0 0 80 20"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  style="height: 1em; display: block"
+>
+  <circle fill="currentColor" stroke="none" cx="10" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
       repeatCount="indefinite"
-      begin="0.1"/>    
+      begin="0.1"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="46" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="25" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.2"/>       
+      repeatCount="indefinite"
+      begin="0.2"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="86" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="40" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.3"/>     
+      repeatCount="indefinite"
+      begin="0.3"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="126" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="55" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.4"/>     
+      repeatCount="indefinite"
+      begin="0.4"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="166" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="70" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.5"/>     
+      repeatCount="indefinite"
+      begin="0.5"
+    />
   </circle>
 </svg>`;
 
@@ -94,11 +104,8 @@ window.console.log = this.console.log || function () {};
    * @param {Object} config Configuration options
    */
   Sline._Initialize = function (config) {
-    if (!config.retailer) {
-      throw "Invalid configuration: missing retailer information";
-    }
-    Sline.ApiToken = config.apiToken
-    Sline.retailerSlug = config.retailer;
+    Sline.ApiToken = config.apiToken;
+
     if (typeof config?.production === "boolean" && config.production) {
       Sline.apiURL = "https://api.prod.sline.io/v1";
       Sline.baseCheckoutURL = "https://subscribe.sline.io/";
@@ -106,13 +113,14 @@ window.console.log = this.console.log || function () {};
       Sline.apiURL = "https://api.stg.sline.io/v1";
       Sline.baseCheckoutURL = "https://checkout.stg.sline.io";
     }
-    Sline.customer = {};
-    Sline.shippingAddress = {};
-    Sline.billingAddress = {};
+
+    Sline.customer = undefined;
+    Sline.shippingAddress = undefined;
+    Sline.billingAddress = undefined;
     Sline.options = {};
     Sline.checkoutURL = "";
     Sline.prices = {};
-    Sline.taxRate = config.taxRate ?? 20.0
+    Sline.taxRate = config.taxRate ?? 20.0;
     Sline.durations = [];
     Sline.lineItems = [];
   };
@@ -124,13 +132,18 @@ window.console.log = this.console.log || function () {};
   Sline.InitializeCheckoutButton = function (config) {
     if (
       !config.checkoutButton ||
-      (!config.checkoutButton.id && config.checkoutButton?.classPath.toString().trim().length === 0) ||
-      (!config.checkoutButton.classPath && config.checkoutButton?.id.toString().trim().length === 0)
+      (!config.checkoutButton.id &&
+        config.checkoutButton?.classPath.toString().trim().length === 0) ||
+      (!config.checkoutButton.classPath &&
+        config.checkoutButton?.id.toString().trim().length === 0)
     ) {
       throw "Invalid configuration: missing checkout button id or classPath";
     }
 
-    const checkoutButton = config.checkoutButton.id ? document.getElementById(config.checkoutButton.id) : document.querySelectorAll(config.checkoutButton.classPath);
+    const checkoutButton = config.checkoutButton.id
+      ? document.getElementById(config.checkoutButton.id)
+      : document.querySelectorAll(config.checkoutButton.classPath);
+
     if (!checkoutButton) {
       throw "Invalid configuration: checkout button does not exist";
     }
@@ -147,16 +160,24 @@ window.console.log = this.console.log || function () {};
       },
     };
 
-    if (!Sline.checkoutButton.events.customOnClickEvent && config.checkoutButton.id) {
+    if (
+      !Sline.checkoutButton.events.customOnClickEvent &&
+      config.checkoutButton.id
+    ) {
       checkoutButton.removeEventListener("click", Sline.OnCheckoutButtonClick);
       checkoutButton.addEventListener("click", Sline.OnCheckoutButtonClick);
-    } else if (!Sline.checkoutButton.events.customOnClickEvent && config.checkoutButton.classPath) {
-      const buttons = document.querySelectorAll(config.checkoutButton.classPath);
+    } else if (
+      !Sline.checkoutButton.events.customOnClickEvent &&
+      config.checkoutButton.classPath
+    ) {
+      const buttons = document.querySelectorAll(
+        config.checkoutButton.classPath
+      );
       if (buttons.length) {
-        buttons.forEach(button => {
+        buttons.forEach((button) => {
           button.removeEventListener("click", Sline.OnCheckoutButtonClick);
           button.addEventListener("click", Sline.OnCheckoutButtonClick);
-        })
+        });
       }
     }
   };
@@ -168,18 +189,28 @@ window.console.log = this.console.log || function () {};
   Sline.OnCheckoutButtonClick = async function (e) {
     e.preventDefault();
     e.stopPropagation();
-    if (Sline.lineItems.length === 0) return false
 
-    e.target.setAttribute("disabled", "disabled");
-    e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
-    await Sline._GenerateCheckoutURL(Sline.lineItems)
-    .then(response => {
-      if (!Sline.checkoutButton.events.customOnClickEvent) {
-        location.href = Sline.checkoutURL
+    e.target.setAttribute("disabled", "true");
+    e.target.innerHTML = svgLoader;
+
+    let lineItems = Sline.lineItems;
+
+    const reference = e.target.getAttribute("data-reference");
+    if (!Sline.checkoutButton.id && reference) {
+      const referenceLineItem = lineItems.find(
+        (lineItem) => lineItem.reference === reference
+      );
+
+      if (referenceLineItem) {
+        lineItems = [referenceLineItem];
       }
-      
-      return response;
-    })
+    }
+
+    await Sline._GenerateCheckoutURL(lineItems);
+
+    if (!Sline.checkoutButton.events.customOnClickEvent) {
+      location.href = Sline.checkoutURL;
+    }
   };
 
   /**
@@ -242,7 +273,7 @@ window.console.log = this.console.log || function () {};
   };
 
   /**
-   * Add Options 
+   * Add Options
    * @param {Options} options of session
    */
   Sline.setOptions = function (options) {
@@ -251,26 +282,27 @@ window.console.log = this.console.log || function () {};
 
   /**
    * Update LineItem in LineItems
-   * @param {LineItem} lineItem 
+   * @param {LineItem} lineItem
    * @param {int} qty of the product
    */
   Sline.UpdateLineItem = async function (lineItem, qty) {
     // Check if already inside LineItems
-    var index = Sline.lineItems.findIndex((x) => x.reference === lineItem.reference);
-    // if already inside update quantity 
+    const index = Sline.lineItems.findIndex(
+      (x) => x.reference === lineItem.reference
+    );
+
+    // if already inside update quantity
     if (index !== -1) {
       Sline.lineItems[index].quantity = Number(qty);
     } else {
-    // if not push inside LineItems 
+      // if not push inside LineItems
       Sline.lineItems.push({
         ...lineItem,
         quantity: Number(qty),
       });
     }
 
-    if (!Sline.prices[lineItem.reference]) {
-      await Sline._GetDurationsAndPrices();
-    }
+    await Sline._GetDurationsAndPrices();
 
     Sline._UpdateCheckoutButton();
   };
@@ -287,15 +319,15 @@ window.console.log = this.console.log || function () {};
    * @param {Customer} customer
    * @returns
    */
-  Sline.AddCustomer= function (customer) {
+  Sline.AddCustomer = function (customer) {
     Sline.customer = customer;
   };
 
   /**
    * Remove customer already set
    */
-  Sline.ResetCustomer= function () {
-    Sline.customer = {};
+  Sline.ResetCustomer = function () {
+    Sline.customer = undefined;
   };
 
   /**
@@ -303,7 +335,7 @@ window.console.log = this.console.log || function () {};
    * @param {Address} address
    * @returns
    */
-  Sline.AddShippingAddress= function (address) {
+  Sline.AddShippingAddress = function (address) {
     Sline.shippingAddress = address;
   };
 
@@ -312,29 +344,32 @@ window.console.log = this.console.log || function () {};
    * @param {Address} address
    * @returns
    */
-  Sline.AddBillingAddress= function (address) {
+  Sline.AddBillingAddress = function (address) {
     Sline.billingAddress = address;
   };
 
   /**
-  * Generates the checkout URL with lineItems
-  * @param {Array} lineItems
-  * @returns
-  */
+   * Generates the checkout URL with lineItems
+   * @param {Array} lineItems
+   * @returns
+   */
   Sline.GenerateCheckoutURL = async function (lineItems) {
-    Sline._GenerateCheckoutURL(lineItems)
-  }
-  
+    await Sline._GenerateCheckoutURL(lineItems);
+  };
+
   /**
    * Generates the checkout URL with lineItems
    * @param {Array} lineItems
    * @returns
    */
   Sline._GenerateCheckoutURL = async function (lineItems) {
-    var url = Sline.apiURL + "/sessions";
-    var payload = {};
+    const url = Sline.apiURL + "/sessions";
+    const payload = {};
 
-    if (lineItems.length === 0) return false
+    if (lineItems.length === 0)
+      throw Error(
+        "Cannot create a checkout without line items. Please add at least one line item : Sline.AddLineItem(lineItem, quantity)."
+      );
 
     // Prepare payload
     payload["line_items_attributes"] = lineItems;
@@ -342,28 +377,34 @@ window.console.log = this.console.log || function () {};
     payload["shipping_address_attributes"] = Sline.shippingAddress;
     payload["session_customer_attributes"] = Sline.customer;
     payload["selected_duration"] = Number(Sline.durationSelector.value);
-    Object.keys(Sline.options).map(k => payload[k] = Sline.options[k]);
+    Object.assign(payload, Sline.options);
 
-    // Set Header
-    var myHeaders = new Headers();
-    myHeaders.append("accept", "application/json");
-    myHeaders.append("content-type", "application/json");
-    myHeaders.append("Authorization", `Bearer ${Sline.ApiToken}`);
+    const body = JSON.stringify(payload);
 
-    var raw = JSON.stringify(payload);
-    var requestOptions = {
+    // Set headers
+    const headers = new Headers();
+    headers.append("accept", "application/json");
+    headers.append("content-type", "application/json");
+    headers.append("Authorization", `Bearer ${Sline.ApiToken}`);
+
+    const requestOptions = {
       method: "POST",
-      headers: myHeaders,
-      body: raw,
+      headers,
+      body,
       redirect: "follow",
     };
-    try {
-      const response = await fetch(url, requestOptions);
-      const responseData = await response.json();
 
+    const response = await fetch(url, requestOptions);
+    const data = await response.json();
+
+    if (response.status === 201) {
       // Set checkout redirection url baseUrl/:sessionId?retailerApiKey=ApiToken
-      Sline.checkoutURL = Sline.baseCheckoutURL + '/' + responseData.id + `?retailerApiKey=${Sline.ApiToken}`;
-      
+      Sline.checkoutURL =
+        Sline.baseCheckoutURL +
+        "/" +
+        data.id +
+        `?retailerApiKey=${Sline.ApiToken}`;
+
       // Event that can be caught by the retailer's dev team
       document.body.dispatchEvent(
         new Event("CheckoutUrlReady", {
@@ -371,9 +412,9 @@ window.console.log = this.console.log || function () {};
         })
       );
 
-      return responseData;
-    } catch (error) {
-      return console.warn(error);
+      return Sline.checkoutURL;
+    } else {
+      throw Error(JSON.stringify(data));
     }
   };
 
@@ -381,59 +422,66 @@ window.console.log = this.console.log || function () {};
    * Gets the duration options for current lineItems
    */
   Sline._GetDurationsAndPrices = debounce(async function () {
-    var url = Sline.apiURL + "/plans";
-    var payload = {};
+    const url = Sline.apiURL + "/plans";
+    const payload = {};
+
+    // Prepare payload
     payload["line_items"] = Sline.lineItems;
 
-    var myHeaders = new Headers();
-    myHeaders.append("accept", "application/json");
-    myHeaders.append("content-type", "application/json");
-    myHeaders.append("Authorization", `Bearer ${Sline.ApiToken}`);
-    var raw = JSON.stringify(payload);
-    var requestOptions = {
+    const body = JSON.stringify(payload);
+
+    // Set headers
+    const headers = new Headers();
+    headers.append("accept", "application/json");
+    headers.append("content-type", "application/json");
+    headers.append("Authorization", `Bearer ${Sline.ApiToken}`);
+
+    const requestOptions = {
       method: "POST",
-      headers: myHeaders,
-      body: raw,
+      headers,
+      body,
       redirect: "follow",
     };
-    try {
-      const response = await fetch(url, requestOptions);
-      const responseData = await response.json().then((res) => {
-        Sline.lineItems.forEach((lineItem) => {
-          Sline.durations = res.line_items
-            .map((lineItem) => lineItem.plans.map(plan => plan.duration))[0]
-            .sort((a, b) => a - b);
-          if (!Sline.durationSelector.value) {
-            Sline.durationSelector.value =
-            Sline.durations[Sline.durations.length - 1];
-          }
+
+    const response = await fetch(url, requestOptions);
+    const data = await response.json();
+
+    if (response.status === 200) {
+      Sline.durations = data.line_items
+        .map((lineItem) => lineItem.plans.map((plan) => plan.duration))[0]
+        .sort((a, b) => a - b);
+
+      if (!Sline.durationSelector.value) {
+        Sline.durationSelector.value =
+          Sline.durations[Sline.durations.length - 1];
+      }
+
+      data.line_items.forEach((lineItem) => {
+        Sline.prices[lineItem.reference] = {};
+
+        lineItem.plans.forEach((plan) => {
+          Sline.prices[lineItem.reference][plan.duration] = {
+            firstInstalmentPrice: plan.first_instalment,
+            firstInstalmentPriceWithTax:
+              plan.first_instalment * (1 + Sline.taxRate / 100),
+            otherInstalmentPrice: plan.other_instalment,
+            otherInstalmentPriceWithTax:
+              plan.other_instalment * (1 + Sline.taxRate / 100),
+            taxRate: Sline.taxRate,
+          };
         });
-
-        res.line_items.forEach((lineItem) => {
-          Sline.prices[lineItem.reference]= {}
-          lineItem.plans.forEach((plan) => {
-            Sline.prices[lineItem.reference][plan.duration] = {
-              firstInstalmentPrice: plan.first_instalment,
-              firstInstalmentPriceWithTax: plan.first_instalment * (1 + Sline.taxRate / 100),
-              otherInstalmentPrice: plan.other_instalment,
-              otherInstalmentPriceWithTax: plan.other_instalment * (1 + Sline.taxRate / 100),
-              taxRate: Sline.taxRate
-            };
-          });
-        });
-
-        // Event that can be caught by the retailer's dev team
-        document.body.dispatchEvent(
-          new Event("SlinePricesReady", {
-            bubbles: true,
-          })
-        );
-
-        Sline._UpdateCheckoutButton();
       });
-      return responseData;
-    } catch (error) {
-      return console.warn(error);
+
+      // Event that can be caught by the retailer's dev team
+      document.body.dispatchEvent(
+        new Event("SlinePricesReady", {
+          bubbles: true,
+        })
+      );
+
+      Sline._UpdateCheckoutButton();
+    } else {
+      throw Error(JSON.stringify(data));
     }
   }, 200);
 
@@ -441,38 +489,47 @@ window.console.log = this.console.log || function () {};
    * Updates the checkout button text
    */
   Sline._UpdateCheckoutButton = async function () {
+    // if sline prices aren't loaded yet, dont update checkout buttons
+
+    if (Object.keys(Sline.prices).length === 0) return;
+
     //somme des prices
-    const buttons = Sline.checkoutButton.id ? [document.getElementById(Sline.checkoutButton.id)] : document.querySelectorAll(Sline.checkoutButton.classPath);
-    
-    buttons.forEach(checkoutButton => {
-      checkoutButton.setAttribute("disabled", "disabled");
-  
+    const buttons = Sline.checkoutButton.id
+      ? [document.getElementById(Sline.checkoutButton.id)]
+      : document.querySelectorAll(Sline.checkoutButton.classPath);
+
+    buttons.forEach((checkoutButton) => {
+      checkoutButton.setAttribute("disabled", "true");
+
       let minPrice = 0;
       if (Sline.checkoutButton.id) {
         Sline.lineItems.forEach((item, k) => {
           minPrice += Sline.prices[item.reference]
-            ? Sline.prices[item.reference][Sline.durationSelector.value].otherInstalmentPriceWithTax
+            ? Sline.prices[item.reference][Sline.durationSelector.value]
+                .otherInstalmentPriceWithTax
             : 0;
         });
       } else {
-        const reference = checkoutButton.getAttribute('data-reference')
-        const index = Sline.lineItems.map(item => item.reference).indexOf(reference)
+        const reference = checkoutButton.getAttribute("data-reference");
+
         if (Sline.prices[reference]) {
-          minPrice = Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPriceWithTax
+          minPrice =
+            Sline.prices[reference][Sline.durationSelector.value]
+              .otherInstalmentPriceWithTax;
         }
       }
-  
+
       if (
         Sline.checkoutButton.prefix.length ||
         Sline.checkoutButton.suffix.length
       ) {
         checkoutButton.textContent = `${Sline.checkoutButton.prefix} ${
-         Math.round((minPrice / 100) * 100) / 100
+          Math.round((minPrice / 100) * 100) / 100
         }${Sline._GetCurrencySymbol()} ${Sline.checkoutButton.suffix}`;
       }
-  
+
       checkoutButton.removeAttribute("disabled");
-    })
+    });
   };
 
   /**
@@ -480,7 +537,7 @@ window.console.log = this.console.log || function () {};
    * @returns currency symbol
    */
   Sline._GetCurrencySymbol = function () {
-    return  "€";
+    return "€";
   };
 
   /**
@@ -492,7 +549,8 @@ window.console.log = this.console.log || function () {};
   Sline.GetPriceForProductWithDuration = function (reference, qty) {
     return (
       (Sline.prices[reference]
-        ? (Sline.prices[reference][Sline.durationSelector.value].otherInstalmentPrice *
+        ? (Sline.prices[reference][Sline.durationSelector.value]
+            .otherInstalmentPrice *
             qty) /
           100
         : 0) + Sline._GetCurrencySymbol()

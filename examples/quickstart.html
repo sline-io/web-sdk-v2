@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/gh/sline-io/web-sdk-v2/sline-sdk.min.js"
+    ></script>
+  </head>
+
+  <body>
+    <button id="checkout-button">Louer</button>
+
+    <script type="text/javascript">
+      Sline.Initialize({
+        apiToken: "{{ INSERT_YOUR_API_TOKEN }}", // identifiant public disponible dans votre back-office Sline
+        production: true, // false si vous êtes en environnement de test
+        taxRate: 20.0, // taux de tva
+        checkoutButton: {
+          id: "checkout-button", // id de votre bouton de checkout (voir plus bas)
+          prefix: "Louer à partir de ", // texte personnalisable à afficher dans le bouton
+          suffix: "/mois",
+        },
+      });
+
+      // ajouter les ou les produits du panier
+      Sline.AddLineItem(
+        {
+          name: "Iphone 15 Pro",
+          reference: "IPHONE15PRO",
+          item_type: "physical",
+          image:
+            "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-bluetitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=VW44dkRidm5wazhwcGxtL0cyaEJ2VTkrNXBUdUJSK1k4NE5seUtJaW80Y1JhMkZic05CWW9VU1dxSWZUUWVyT3B3azBNWWRMTTJUR1Y1SkFQMTJmYytRU0p3cnVrZzhmdWQwTDVYRlMxUFpLVUtTU1p5Q3hjSjJnWUpQQWJXd2pMZklqcUZDbWdZWTl4MzFJMU9ocFJBPT0=&traceId=1",
+          unit_price: 122900,
+          rent: true,
+        },
+        1
+      );
+    </script>
+  </body>
+</html>
