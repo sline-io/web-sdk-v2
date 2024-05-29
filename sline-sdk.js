@@ -29,9 +29,9 @@ window.console.log = this.console.log || function () {};
    *
    * Contains all Sline API classes and functions.
    */
-  var Sline = root.Sline;
+  const Sline = root.Sline;
 
-  var svgLoader = `<svg
+  const svgLoader = `<svg
   version="1.1"
   viewBox="0 0 80 20"
   xmlns="http://www.w3.org/2000/svg"
@@ -287,9 +287,10 @@ window.console.log = this.console.log || function () {};
    */
   Sline.UpdateLineItem = async function (lineItem, qty) {
     // Check if already inside LineItems
-    var index = Sline.lineItems.findIndex(
+    const index = Sline.lineItems.findIndex(
       (x) => x.reference === lineItem.reference
     );
+
     // if already inside update quantity
     if (index !== -1) {
       Sline.lineItems[index].quantity = Number(qty);
@@ -364,8 +365,8 @@ window.console.log = this.console.log || function () {};
    * @returns
    */
   Sline._GenerateCheckoutURL = async function (lineItems) {
-    var url = Sline.apiURL + "/sessions";
-    var payload = {};
+    const url = Sline.apiURL + "/sessions";
+    const payload = {};
 
     if (lineItems.length === 0)
       throw Error(
@@ -378,19 +379,20 @@ window.console.log = this.console.log || function () {};
     payload["shipping_address_attributes"] = Sline.shippingAddress;
     payload["session_customer_attributes"] = Sline.customer;
     payload["selected_duration"] = Number(Sline.durationSelector.value);
-    Object.keys(Sline.options).map((k) => (payload[k] = Sline.options[k]));
+    Object.assign(payload, Sline.options);
 
-    // Set Header
-    var myHeaders = new Headers();
-    myHeaders.append("accept", "application/json");
-    myHeaders.append("content-type", "application/json");
-    myHeaders.append("Authorization", `Bearer ${Sline.ApiToken}`);
+    const body = JSON.stringify(payload);
 
-    var raw = JSON.stringify(payload);
-    var requestOptions = {
+    // Set headers
+    const headers = new Headers();
+    headers.append("accept", "application/json");
+    headers.append("content-type", "application/json");
+    headers.append("Authorization", `Bearer ${Sline.ApiToken}`);
+
+    const requestOptions = {
       method: "POST",
-      headers: myHeaders,
-      body: raw,
+      headers,
+      body,
       redirect: "follow",
     };
 
@@ -414,7 +416,7 @@ window.console.log = this.console.log || function () {};
 
       return Sline.checkoutURL;
     } else {
-      throw Error(data.error);
+      throw Error(JSON.stringify(data));
     }
   };
 
@@ -422,61 +424,66 @@ window.console.log = this.console.log || function () {};
    * Gets the duration options for current lineItems
    */
   Sline._GetDurationsAndPrices = debounce(async function () {
-    var url = Sline.apiURL + "/plans";
-    var payload = {};
+    const url = Sline.apiURL + "/plans";
+    const payload = {};
+
+    // Prepare payload
     payload["line_items"] = Sline.lineItems;
 
-    var myHeaders = new Headers();
-    myHeaders.append("accept", "application/json");
-    myHeaders.append("content-type", "application/json");
-    myHeaders.append("Authorization", `Bearer ${Sline.ApiToken}`);
-    var raw = JSON.stringify(payload);
-    var requestOptions = {
+    const body = JSON.stringify(payload);
+
+    // Set headers
+    const headers = new Headers();
+    headers.append("accept", "application/json");
+    headers.append("content-type", "application/json");
+    headers.append("Authorization", `Bearer ${Sline.ApiToken}`);
+
+    const requestOptions = {
       method: "POST",
-      headers: myHeaders,
-      body: raw,
+      headers,
+      body,
       redirect: "follow",
     };
-    try {
-      const response = await fetch(url, requestOptions);
-      const responseData = await response.json().then((res) => {
-        Sline.lineItems.forEach((lineItem) => {
-          Sline.durations = res.line_items
-            .map((lineItem) => lineItem.plans.map((plan) => plan.duration))[0]
-            .sort((a, b) => a - b);
-          if (!Sline.durationSelector.value) {
-            Sline.durationSelector.value =
-              Sline.durations[Sline.durations.length - 1];
-          }
+
+    const response = await fetch(url, requestOptions);
+    const data = await response.json();
+
+    if (response.status === 200) {
+      Sline.durations = data.line_items
+        .map((lineItem) => lineItem.plans.map((plan) => plan.duration))[0]
+        .sort((a, b) => a - b);
+
+      if (!Sline.durationSelector.value) {
+        Sline.durationSelector.value =
+          Sline.durations[Sline.durations.length - 1];
+      }
+
+      data.line_items.forEach((lineItem) => {
+        Sline.prices[lineItem.reference] = {};
+
+        lineItem.plans.forEach((plan) => {
+          Sline.prices[lineItem.reference][plan.duration] = {
+            firstInstalmentPrice: plan.first_instalment,
+            firstInstalmentPriceWithTax:
+              plan.first_instalment * (1 + Sline.taxRate / 100),
+            otherInstalmentPrice: plan.other_instalment,
+            otherInstalmentPriceWithTax:
+              plan.other_instalment * (1 + Sline.taxRate / 100),
+            taxRate: Sline.taxRate,
+          };
         });
-
-        res.line_items.forEach((lineItem) => {
-          Sline.prices[lineItem.reference] = {};
-          lineItem.plans.forEach((plan) => {
-            Sline.prices[lineItem.reference][plan.duration] = {
-              firstInstalmentPrice: plan.first_instalment,
-              firstInstalmentPriceWithTax:
-                plan.first_instalment * (1 + Sline.taxRate / 100),
-              otherInstalmentPrice: plan.other_instalment,
-              otherInstalmentPriceWithTax:
-                plan.other_instalment * (1 + Sline.taxRate / 100),
-              taxRate: Sline.taxRate,
-            };
-          });
-        });
-
-        // Event that can be caught by the retailer's dev team
-        document.body.dispatchEvent(
-          new Event("SlinePricesReady", {
-            bubbles: true,
-          })
-        );
-
-        Sline._UpdateCheckoutButton();
       });
-      return responseData;
-    } catch (error) {
-      return console.warn(error);
+
+      // Event that can be caught by the retailer's dev team
+      document.body.dispatchEvent(
+        new Event("SlinePricesReady", {
+          bubbles: true,
+        })
+      );
+
+      Sline._UpdateCheckoutButton();
+    } else {
+      throw Error(JSON.stringify(data));
     }
   }, 200);
 
