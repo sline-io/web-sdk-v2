@@ -302,9 +302,7 @@ window.console.log = this.console.log || function () {};
       });
     }
 
-    if (!Sline.prices[lineItem.reference]) {
-      await Sline._GetDurationsAndPrices();
-    }
+    await Sline._GetDurationsAndPrices();
 
     Sline._UpdateCheckoutButton();
   };
