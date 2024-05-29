@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/gh/sline-io/web-sdk-v2/sline-sdk.min.js"
+    ></script>
+
+    <style>
+      div {
+        display: flex;
+        column-gap: 10px;
+        align-items: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <button class="quantity-button" onclick="updateQuantity(quantity-1)">
+        -
+      </button>
+      <p id="quantity">1</p>
+      <button class="quantity-button" onclick="updateQuantity(quantity+1)">
+        +
+      </button>
+
+      <button id="checkout-button">Louer</button>
+    </div>
+
+    <script type="text/javascript">
+      Sline.Initialize({
+        apiToken: "{{ INSERT_YOUR_API_TOKEN }}",
+        production: true,
+        taxRate: 20.0,
+        checkoutButton: {
+          id: "checkout-button",
+          prefix: "Louer à partir de ",
+          suffix: "/mois",
+        },
+      });
+
+      const lineItem = {
+        name: "Iphone 15 Pro",
+        reference: "IPHONE15PRO",
+        item_type: "physical",
+        image:
+          "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-1inch-bluetitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80&.v=VW44dkRidm5wazhwcGxtL0cyaEJ2VTkrNXBUdUJSK1k4NE5seUtJaW80Y1JhMkZic05CWW9VU1dxSWZUUWVyT3B3azBNWWRMTTJUR1Y1SkFQMTJmYytRU0p3cnVrZzhmdWQwTDVYRlMxUFpLVUtTU1p5Q3hjSjJnWUpQQWJXd2pMZklqcUZDbWdZWTl4MzFJMU9ocFJBPT0=&traceId=1",
+        unit_price: 122900,
+        rent: true,
+      };
+      var quantity = 1;
+
+      Sline.AddLineItem(lineItem, quantity);
+
+      function updateQuantity(updatedQuantity) {
+        quantity = Math.max(1, updatedQuantity);
+
+        Sline.UpdateLineItem(lineItem, quantity);
+
+        document.getElementById("quantity").innerHTML = quantity;
+      }
+    </script>
+  </body>
+</html>
