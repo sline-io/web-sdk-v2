@@ -355,7 +355,7 @@ window.console.log = this.console.log || function () {};
    * @returns
    */
   Sline.GenerateCheckoutURL = async function (lineItems) {
-    Sline._GenerateCheckoutURL(lineItems);
+    await Sline._GenerateCheckoutURL(lineItems);
   };
 
   /**
