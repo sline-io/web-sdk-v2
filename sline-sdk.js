@@ -31,47 +31,57 @@ window.console.log = this.console.log || function () {};
    */
   var Sline = root.Sline;
 
-  var svgLoader = `<svg version="1.1" id="L4" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" style="height: 25px; width: 66px; margin-left: -20px; margin-top: -3px;"
-  viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
-  <circle fill="#fff" stroke="none" cx="6" cy="50" r="10">
+  var svgLoader = `<svg
+  version="1.1"
+  viewBox="0 0 80 20"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  style="height: 1em; display: block"
+>
+  <circle fill="currentColor" stroke="none" cx="10" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
       repeatCount="indefinite"
-      begin="0.1"/>    
+      begin="0.1"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="46" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="25" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.2"/>       
+      repeatCount="indefinite"
+      begin="0.2"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="86" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="40" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.3"/>     
+      repeatCount="indefinite"
+      begin="0.3"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="126" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="55" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.4"/>     
+      repeatCount="indefinite"
+      begin="0.4"
+    />
   </circle>
-  <circle fill="#fff" stroke="none" cx="166" cy="50" r="10">
+  <circle fill="currentColor" stroke="none" cx="70" cy="10" r="3">
     <animate
       attributeName="opacity"
       dur="1s"
       values="0;1;0"
-      repeatCount="indefinite" 
-      begin="0.5"/>     
+      repeatCount="indefinite"
+      begin="0.5"
+    />
   </circle>
 </svg>`;
 
@@ -133,6 +143,7 @@ window.console.log = this.console.log || function () {};
     const checkoutButton = config.checkoutButton.id
       ? document.getElementById(config.checkoutButton.id)
       : document.querySelectorAll(config.checkoutButton.classPath);
+
     if (!checkoutButton) {
       throw "Invalid configuration: checkout button does not exist";
     }
@@ -180,7 +191,7 @@ window.console.log = this.console.log || function () {};
     e.stopPropagation();
 
     e.target.setAttribute("disabled", "true");
-    e.target.innerHTML = `<div style="height: 25px; text-align: center;">${svgLoader}</div>`;
+    e.target.innerHTML = svgLoader;
 
     let lineItems = Sline.lineItems;
 
